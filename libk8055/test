@@ -1,0 +1,4 @@
+#! /bin/bash
+cpt=0
+while [ $cpt -lt 256 ]; do ./build/libk8055/k8055 -d:$cpt -a1:$cpt -a2:$cpt; ((cpt=cpt+1)); done
+./build/libk8055/k8055 -d:0 -a1:0 -a2:0
