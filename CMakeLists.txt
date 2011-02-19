@@ -24,6 +24,18 @@ SET(CMAKE_CXX_FLAGS "-O2 -fno-implement-inlines")
 SET(CMAKE_CXX_FLAGS_RELEASE "")
 SET(CMAKE_CXX_FLAGS_DEBUG "-g ")
 #
+# COLOR MESSAGES
+#
+string( ASCII 27 _escape)
+function(COLOR_MESSAGE TEXT)
+    if(CMAKE_COLOR_MAKEFILE)
+        MESSAGE(${TEXT})
+    else()
+        string(REGEX REPLACE "${_escape}.[0123456789;]*m" "" __TEXT ${TEXT})
+        MESSAGE(${__TEXT})
+    endif()
+endfunction()
+#
 # HEADER LIBRARY FUNCTIONS
 #
 INCLUDE(CheckIncludeFiles)
@@ -33,5 +45,27 @@ CHECK_INCLUDE_FILES(string.h HAVE_STRING_H)
 CHECK_INCLUDE_FILES(stdio.h HAVE_STDIO_H)
 CHECK_INCLUDE_FILES(assert.h HAVE_ASSERT_H)
 CHECK_INCLUDE_FILES(math.h HAVE_MATH_H)
-ADD_SUBDIRECTORY(libk8055)
+IF (HAVE_USB_H)
+    ADD_SUBDIRECTORY(libk8055)
+ENDIF()
 #
+FIND_PACKAGE(wxWidgets COMPONENTS core base)
+IF(wxWidgets_FOUND)
+    ADD_SUBDIRECTORY(k8055gui)
+ENDIF()
+#
+# BUILD SUMMARY
+#
+COLOR_MESSAGE("\n${_escape}[1;36mBuild Summary${_escape}[0m\n--------------------")
+IF (HAVE_USB_H)
+    COLOR_MESSAGE("* ${_escape}[1;35mlibusb${_escape}[0m                :   ${_escape}[1;32mfound${_escape}[0m build libk8055")
+ELSE()
+    COLOR_MESSAGE("* ${_escape}[1;35mlibusb${_escape}[0m                :   ${_escape}[1;31mmissing${_escape}[0m unable to build libk8055")
+    MESSAGE( FATAL_ERROR "Abort" )
+ENDIF()
+IF(wxWidgets_FOUND)
+    COLOR_MESSAGE("* ${_escape}[1;35mwxwidget${_escape}[0m              :   ${_escape}[1;32mfound${_escape}[0m build k8055gui")
+ELSE()
+    COLOR_MESSAGE("* ${_escape}[1;35mwxwidget${_escape}[0m              :   ${_escape}[1;31mmissing${_escape}[0m unable to build k8055gui")
+ENDIF()
+MESSAGE("")
