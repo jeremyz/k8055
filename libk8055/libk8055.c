@@ -129,7 +129,7 @@ struct k8055_dev {
 };
 
 static struct k8055_dev k8055d[K8055_MAX_DEV];
-static struct k8055_dev *CurrDev;
+static struct k8055_dev *curr_dev;
 
 /* Keep these globals for now */
 unsigned char *data_in, *data_out;
@@ -154,12 +154,12 @@ static int ReadK8055Data(void)
 {
     int read_status = 0, i = 0;
 
-    if (CurrDev->DevNo == 0) return K8055_ERROR;
+    if (curr_dev->DevNo == 0) return K8055_ERROR;
 
     for(i=0; i < 3; i++)
         {
-        read_status = usb_interrupt_read(CurrDev->device_handle, USB_INP_EP, (char *)CurrDev->data_in, PACKET_LEN, USB_TIMEOUT);
-        if ((read_status == PACKET_LEN) && (CurrDev->data_in[1] == CurrDev->DevNo )) return 0;
+        read_status = usb_interrupt_read(curr_dev->device_handle, USB_INP_EP, (char *)curr_dev->data_in, PACKET_LEN, USB_TIMEOUT);
+        if ((read_status == PACKET_LEN) && (curr_dev->data_in[1] == curr_dev->DevNo )) return 0;
         if (DEBUG)
             fprintf(stderr, "Read retry\n");
         }
@@ -171,12 +171,12 @@ static int WriteK8055Data(unsigned char cmd)
 {
     int write_status = 0, i = 0;
 
-    if (CurrDev->DevNo == 0) return K8055_ERROR;
+    if (curr_dev->DevNo == 0) return K8055_ERROR;
 
-    CurrDev->data_out[0] = cmd;
+    curr_dev->data_out[0] = cmd;
     for(i=0; i < 3; i++)
         {
-        write_status = usb_interrupt_write(CurrDev->device_handle, USB_OUT_EP, (char *)CurrDev->data_out, PACKET_LEN, USB_TIMEOUT);
+        write_status = usb_interrupt_write(curr_dev->device_handle, USB_OUT_EP, (char *)curr_dev->data_out, PACKET_LEN, USB_TIMEOUT);
         if (write_status == PACKET_LEN) return 0;
         if (DEBUG)
             fprintf(stderr, "Write retry\n");
@@ -254,26 +254,26 @@ int OpenDevice(long BoardAddress)
             if ((dev->descriptor.idVendor == VELLEMAN_VENDOR_ID) &&
                 (dev->descriptor.idProduct == ipid))
             {
-                CurrDev = &k8055d[BoardAddress];
-                CurrDev->device_handle = usb_open(dev);
+                curr_dev = &k8055d[BoardAddress];
+                curr_dev->device_handle = usb_open(dev);
                 if (DEBUG)
                     fprintf(stderr,
                             "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n",
                             dev->filename, dev->descriptor.idVendor,
                             dev->descriptor.idProduct);
-                if (takeover_device(CurrDev->device_handle, 0) < 0)
+                if (takeover_device(curr_dev->device_handle, 0) < 0)
                 {
                     if (DEBUG)
                         fprintf(stderr,
                                 "Can not take over the device from the OS driver\n");
-                    usb_close(CurrDev->device_handle);   /* close usb if we fail */
+                    usb_close(curr_dev->device_handle);   /* close usb if we fail */
                     return K8055_ERROR;  /* throw K8055_ERROR to show that OpenDevice failed */
                 }
                 else
                 {
-                    CurrDev->DevNo = BoardAddress + 1; /* Mark as open and valid */
+                    curr_dev->DevNo = BoardAddress + 1; /* Mark as open and valid */
                     SetCurrentDevice(BoardAddress);
-                    memset(CurrDev->data_out,0,PACKET_LEN);	/* Write cmd 0, read data */
+                    memset(curr_dev->data_out,0,PACKET_LEN);	/* Write cmd 0, read data */
                     WriteK8055Data(CMD_RESET);
                     if (ReadK8055Data() == 0)
                        return BoardAddress;		/* This function should return board address */
@@ -294,17 +294,17 @@ int CloseDevice()
 {
      int rc;
 
-     if (CurrDev->DevNo == 0)
+     if (curr_dev->DevNo == 0)
      {
          if (DEBUG)
              fprintf(stderr, "Current device is not open\n" );
          return 0;
      }
-     rc = usb_close(CurrDev->device_handle);
+     rc = usb_close(curr_dev->device_handle);
      if (rc >= 0)
      {
-         CurrDev->DevNo = 0;  /* Not active nay more */
-         CurrDev->device_handle = NULL;
+         curr_dev->DevNo = 0;  /* Not active nay more */
+         curr_dev->device_handle = NULL;
      }
      return rc;
 }
@@ -316,9 +316,9 @@ long SetCurrentDevice(long deviceno)
     {
         if (k8055d[deviceno].DevNo != 0)
         {
-            CurrDev  = &k8055d[deviceno];
-            data_in  = CurrDev->data_in;
-            data_out = CurrDev->data_out;
+            curr_dev  = &k8055d[deviceno];
+            data_in  = curr_dev->data_in;
+            data_out = curr_dev->data_out;
             return deviceno;
         }
     }
@@ -355,9 +355,9 @@ long ReadAnalogChannel(long Channel)
         if ( ReadK8055Data() == 0)
         {
             if (Channel == 2)
-                return CurrDev->data_in[ANALOG_2_OFFSET];
+                return curr_dev->data_in[ANALOG_2_OFFSET];
             else
-                return CurrDev->data_in[ANALOG_1_OFFSET];
+                return curr_dev->data_in[ANALOG_1_OFFSET];
         }
         else
             return K8055_ERROR;
@@ -370,8 +370,8 @@ int ReadAllAnalog(long *data1, long *data2)
 {
     if (ReadK8055Data() == 0)
     {
-        *data1 = CurrDev->data_in[ANALOG_1_OFFSET];
-        *data2 = CurrDev->data_in[ANALOG_2_OFFSET];
+        *data1 = curr_dev->data_in[ANALOG_1_OFFSET];
+        *data2 = curr_dev->data_in[ANALOG_2_OFFSET];
         return 0;
     }
     else
@@ -383,9 +383,9 @@ int OutputAnalogChannel(long Channel, long data)
     if (Channel == 1 || Channel == 2)
     {
         if (Channel == 2)
-            CurrDev->data_out[ANALOG_2_OFFSET] = (unsigned char)data;
+            curr_dev->data_out[ANALOG_2_OFFSET] = (unsigned char)data;
         else
-            CurrDev->data_out[ANALOG_1_OFFSET] = (unsigned char)data;
+            curr_dev->data_out[ANALOG_1_OFFSET] = (unsigned char)data;
 
         return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
     }
@@ -395,8 +395,8 @@ int OutputAnalogChannel(long Channel, long data)
 
 int OutputAllAnalog(long data1, long data2)
 {
-    CurrDev->data_out[2] = (unsigned char)data1;
-    CurrDev->data_out[3] = (unsigned char)data2;
+    curr_dev->data_out[2] = (unsigned char)data1;
+    curr_dev->data_out[3] = (unsigned char)data2;
 
     return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
 }
@@ -440,7 +440,7 @@ int SetAllAnalog()
 
 int WriteAllDigital(long data)
 {
-    CurrDev->data_out[1] = (unsigned char)data;
+    curr_dev->data_out[1] = (unsigned char)data;
     return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
 }
 
@@ -450,7 +450,7 @@ int ClearDigitalChannel(long Channel)
 
     if (Channel > 0 && Channel < 9)
     {
-	data = CurrDev->data_out[1] & ~(1 << (Channel-1));
+	data = curr_dev->data_out[1] & ~(1 << (Channel-1));
         return WriteAllDigital(data);
     }
     else
@@ -468,7 +468,7 @@ int SetDigitalChannel(long Channel)
 
     if (Channel > 0 && Channel < 9)
     {
-        data = CurrDev->data_out[1] | (1 << (Channel-1));
+        data = curr_dev->data_out[1] | (1 << (Channel-1));
         return WriteAllDigital(data);
     }
     else
@@ -499,9 +499,9 @@ long ReadAllDigital()
     if (ReadK8055Data() == 0)
     {
         return_data = (
-                ((CurrDev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
-                ((CurrDev->data_in[0] << 2) & 0x04) |  /* Input 3 */
-                ((CurrDev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
+                ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
+                ((curr_dev->data_in[0] << 2) & 0x04) |  /* Input 3 */
+                ((curr_dev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
         return return_data;
     }
     else
@@ -513,13 +513,13 @@ int ReadAllValues(long int *data1, long int * data2, long int * data3, long int 
     if (ReadK8055Data() == 0)
     {
         *data1 = (
-                ((CurrDev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
-                ((CurrDev->data_in[0] << 2) & 0x04) |  /* Input 3 */
-                ((CurrDev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
-        *data2 = CurrDev->data_in[ANALOG_1_OFFSET];
-        *data3 = CurrDev->data_in[ANALOG_2_OFFSET];
-        *data4 = *((short int *)(&CurrDev->data_in[COUNTER_1_OFFSET]));
-        *data5 = *((short int *)(&CurrDev->data_in[COUNTER_2_OFFSET]));
+                ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
+                ((curr_dev->data_in[0] << 2) & 0x04) |  /* Input 3 */
+                ((curr_dev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
+        *data2 = curr_dev->data_in[ANALOG_1_OFFSET];
+        *data3 = curr_dev->data_in[ANALOG_2_OFFSET];
+        *data4 = *((short int *)(&curr_dev->data_in[COUNTER_1_OFFSET]));
+        *data5 = *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
         return 0;
     }
     else
@@ -528,9 +528,9 @@ int ReadAllValues(long int *data1, long int * data2, long int * data3, long int 
 
 int SetAllValues(int DigitalData, int AdData1, int AdData2)
 {
-    CurrDev->data_out[1] = (unsigned char)DigitalData;
-    CurrDev->data_out[2] = (unsigned char)AdData1;
-    CurrDev->data_out[3] = (unsigned char)AdData2;
+    curr_dev->data_out[1] = (unsigned char)DigitalData;
+    curr_dev->data_out[2] = (unsigned char)AdData1;
+    curr_dev->data_out[3] = (unsigned char)AdData2;
 
     return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
 }
@@ -539,9 +539,9 @@ int ResetCounter(long CounterNo)
 {
     if (CounterNo == 1 || CounterNo == 2)
     {
-        CurrDev->data_out[0] = 0x02 + (unsigned char)CounterNo;  /* counter selection */
-        CurrDev->data_out[3 + CounterNo] = 0x00;
-        return WriteK8055Data(CurrDev->data_out[0]);
+        curr_dev->data_out[0] = 0x02 + (unsigned char)CounterNo;  /* counter selection */
+        curr_dev->data_out[3 + CounterNo] = 0x00;
+        return WriteK8055Data(curr_dev->data_out[0]);
     }
     else
         return K8055_ERROR;
@@ -554,9 +554,9 @@ long ReadCounter(long CounterNo)
         if (ReadK8055Data() == 0)
         {
             if (CounterNo == 2)
-                return *((short int *)(&CurrDev->data_in[COUNTER_2_OFFSET]));
+                return *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
             else
-                return *((short int *)(&CurrDev->data_in[COUNTER_1_OFFSET]));
+                return *((short int *)(&curr_dev->data_in[COUNTER_1_OFFSET]));
         }
         else
             return K8055_ERROR;
@@ -571,7 +571,7 @@ int SetCounterDebounceTime(long CounterNo, long DebounceTime)
 
     if (CounterNo == 1 || CounterNo == 2)
     {
-        CurrDev->data_out[0] = (unsigned char)CounterNo;
+        curr_dev->data_out[0] = (unsigned char)CounterNo;
         /* the velleman k8055 use a exponetial formula to split up the
            DebounceTime 0-7450 over value 1-255. I've tested every value and
            found that the formula dbt=0,338*value^1,8017 is closest to
@@ -584,11 +584,11 @@ int SetCounterDebounceTime(long CounterNo, long DebounceTime)
         value = sqrtf(DebounceTime / 0.115);
         if (value > ((int)value + 0.49999999))  /* simple round() function) */
             value += 1;
-        CurrDev->data_out[5 + CounterNo] = (unsigned char)value;
+        curr_dev->data_out[5 + CounterNo] = (unsigned char)value;
         if (DEBUG)
             fprintf(stderr, "Debouncetime%d value for k8055:%d\n",
-                    (int)CounterNo, CurrDev->data_out[5 + CounterNo]);
-        return WriteK8055Data(CurrDev->data_out[0]);
+                    (int)CounterNo, curr_dev->data_out[5 + CounterNo]);
+        return WriteK8055Data(curr_dev->data_out[0]);
     }
     else
         return K8055_ERROR;
