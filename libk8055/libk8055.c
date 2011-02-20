@@ -131,9 +131,6 @@ struct k8055_dev {
 static struct k8055_dev k8055d[K8055_MAX_DEV];
 static struct k8055_dev *curr_dev;
 
-/* Keep these globals for now */
-unsigned char *data_in, *data_out;
-
 /* char* device_id[]; */
 
 /* Initialize the usb library - only once */
@@ -317,8 +314,6 @@ long SetCurrentDevice(long deviceno)
         if (k8055d[deviceno].DevNo != 0)
         {
             curr_dev  = &k8055d[deviceno];
-            data_in  = curr_dev->data_in;
-            data_out = curr_dev->data_out;
             return deviceno;
         }
     }
