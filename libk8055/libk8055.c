@@ -45,7 +45,7 @@
 	+---+---+---+---+---+---+---+---+
 	|CMD|DIG|An1|An2|Rs1|Rs2|Dbv|Dbv|
 	+---+---+---+---+---+---+---+---+
-	CMD = Command 
+	CMD = Command
 	DIG = Digital output bitmask
 	An1 = Analog output 1 value, 0-255
 	An2 = Analog output 2 value, 0-255
@@ -133,21 +133,18 @@ struct k8055_dev {
 static struct k8055_dev k8055d[K8055_MAX_DEV];
 static struct k8055_dev *curr_dev;
 
-/* char* device_id[]; */
-
 /* Initialize the usb library - only once */
-static void init_usb(void)
-{
-    static int Done = 0;	/* Only need to do this once */
-    if (!Done) 
-    {
+static void init_usb(void) {
+    static int init_done = 0;
+    if (!init_done)  {
         usb_init();
         usb_find_busses();
         usb_find_devices();
         busses = usb_get_busses();
-        Done = 1;
+        init_done = 1;
     }
 }
+
 /* Actual read of data from the device endpoint, retry 3 times if not responding ok */
 static int ReadK8055Data(void)
 {
