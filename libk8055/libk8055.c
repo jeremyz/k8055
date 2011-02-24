@@ -88,6 +88,8 @@
 
 #define STR_BUFF 256
 #define PACKET_LEN 8
+#define READ_RETRY 3
+#define WRITE_RETRY 3
 
 #define K8055_IPID 0x5500
 #define VELLEMAN_VENDOR_ID 0x10cf
@@ -153,7 +155,7 @@ static int ReadK8055Data(void)
 
     if (curr_dev->DevNo == 0) return K8055_ERROR;
 
-    for(i=0; i < 3; i++)
+    for(i=0; i < READ_RETRY; i++)
         {
         read_status = usb_interrupt_read(curr_dev->device_handle, USB_INP_EP, (char *)curr_dev->data_in, PACKET_LEN, USB_TIMEOUT);
         if ((read_status == PACKET_LEN) && (curr_dev->data_in[1] == curr_dev->DevNo )) return 0;
@@ -171,7 +173,7 @@ static int WriteK8055Data(unsigned char cmd)
     if (curr_dev->DevNo == 0) return K8055_ERROR;
 
     curr_dev->data_out[0] = cmd;
-    for(i=0; i < 3; i++)
+    for(i=0; i < WRITE_RETRY; i++)
         {
         write_status = usb_interrupt_write(curr_dev->device_handle, USB_OUT_EP, (char *)curr_dev->data_out, PACKET_LEN, USB_TIMEOUT);
         if (write_status == PACKET_LEN) return 0;
