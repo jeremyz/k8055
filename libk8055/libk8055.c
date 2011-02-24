@@ -127,7 +127,7 @@ struct k8055_dev {
     unsigned char data_in[PACKET_LEN+1];
     unsigned char data_out[PACKET_LEN+1];
     struct usb_dev_handle *device_handle;
-    int DevNo;
+    int dev_no;
 };
 
 static struct k8055_dev k8055d[K8055_MAX_DEV];
@@ -153,12 +153,12 @@ static int ReadK8055Data(void)
 {
     int read_status = 0, i = 0;
 
-    if (curr_dev->DevNo == 0) return K8055_ERROR;
+    if (curr_dev->dev_no == 0) return K8055_ERROR;
 
     for(i=0; i < READ_RETRY; i++)
         {
         read_status = usb_interrupt_read(curr_dev->device_handle, USB_INP_EP, (char *)curr_dev->data_in, PACKET_LEN, USB_TIMEOUT);
-        if ((read_status == PACKET_LEN) && (curr_dev->data_in[1] == curr_dev->DevNo )) return 0;
+        if ((read_status == PACKET_LEN) && (curr_dev->data_in[1] == curr_dev->dev_no )) return 0;
         if (DEBUG)
             fprintf(stderr, "Read retry\n");
         }
@@ -170,7 +170,7 @@ static int WriteK8055Data(unsigned char cmd)
 {
     int write_status = 0, i = 0;
 
-    if (curr_dev->DevNo == 0) return K8055_ERROR;
+    if (curr_dev->dev_no == 0) return K8055_ERROR;
 
     curr_dev->data_out[0] = cmd;
     for(i=0; i < WRITE_RETRY; i++)
@@ -270,7 +270,7 @@ int OpenDevice(long BoardAddress)
                 }
                 else
                 {
-                    curr_dev->DevNo = BoardAddress + 1; /* Mark as open and valid */
+                    curr_dev->dev_no = BoardAddress + 1; /* Mark as open and valid */
                     SetCurrentDevice(BoardAddress);
                     memset(curr_dev->data_out,0,PACKET_LEN);	/* Write cmd 0, read data */
                     WriteK8055Data(CMD_RESET);
@@ -293,7 +293,7 @@ int CloseDevice()
 {
      int rc;
 
-     if (curr_dev->DevNo == 0)
+     if (curr_dev->dev_no == 0)
      {
          if (DEBUG)
              fprintf(stderr, "Current device is not open\n" );
@@ -302,7 +302,7 @@ int CloseDevice()
      rc = usb_close(curr_dev->device_handle);
      if (rc >= 0)
      {
-         curr_dev->DevNo = 0;  /* Not active nay more */
+         curr_dev->dev_no = 0;  /* Not active nay more */
          curr_dev->device_handle = NULL;
      }
      return rc;
@@ -313,7 +313,7 @@ long SetCurrentDevice(long deviceno)
 {
     if (deviceno >= 0 && deviceno < K8055_MAX_DEV)
     {
-        if (k8055d[deviceno].DevNo != 0)
+        if (k8055d[deviceno].dev_no != 0)
         {
             curr_dev  = &k8055d[deviceno];
             return deviceno;
