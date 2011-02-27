@@ -116,7 +116,7 @@
 #define CMD_SET_ANALOG_DIGITAL 0x05
 
 /* set debug to 0 to not print excess info */
-int DEBUG = 0;
+int debug = 0;
 
 /* variables for usb */
 static struct usb_bus *bus, *busses;
@@ -150,8 +150,11 @@ static int k8055_read( struct k8055_dev* dev ) {
     if(dev->dev_no==0) return K8055_ERROR;
     for(int i=0; i<READ_RETRY; i++) {
         int read_status = usb_interrupt_read(dev->device_handle, USB_INP_EP, (char*)dev->data_in, PACKET_LEN, USB_TIMEOUT);
-        if( (read_status==PACKET_LEN) && (dev->data_in[1]==dev->dev_no) ) return 0;
-        if(DEBUG) fprintf(stderr, "k8055 read retry\n");
+        if( (read_status==PACKET_LEN) && (dev->data_in[1]==dev->dev_no) ) {
+            if(debug) fprintf(stderr,"read dev %d data : %X\n",dev->data_in[1],dev->data_in);
+            return 0;
+        }
+        if(debug) fprintf(stderr, "k8055 read retry\n");
     }
     return K8055_ERROR;
 }
@@ -162,7 +165,7 @@ static int k8055_write( struct k8055_dev* dev ) {
     for(int i=0; i<WRITE_RETRY; i++) {
         int write_status = usb_interrupt_write(dev->device_handle, USB_OUT_EP, (char*)dev->data_out, PACKET_LEN, USB_TIMEOUT);
         if(write_status==PACKET_LEN) return 0;
-        if(DEBUG) fprintf(stderr, "k8055 write retry\n");
+        if(debug) fprintf(stderr, "k8055 write retry\n");
     }
     return K8055_ERROR;
 }
@@ -174,84 +177,69 @@ static int takeover_device(usb_dev_handle * udev, int interface) {
     int ret = K8055_ERROR;
     assert(udev != NULL);
     if(usb_get_driver_np(udev, interface, driver_name, sizeof(driver_name))==0) {
-        if(DEBUG) fprintf(stderr, "usb_get_driver_np success: %s\n", driver_name);
+        if(debug) fprintf(stderr, "usb_get_driver_np success: %s\n", driver_name);
         if(usb_detach_kernel_driver_np(udev, interface)==0) {
-            if(DEBUG) fprintf(stderr, "usb_detach_kernel_driver_np success");
+            if(debug) fprintf(stderr, "usb_detach_kernel_driver_np success");
         } else {
-            if(DEBUG) fprintf(stderr, "usb_detach_kernel_driver_np failure : %s\n", usb_strerror());
+            if(debug) fprintf(stderr, "usb_detach_kernel_driver_np failure : %s\n", usb_strerror());
         }
     } else {
-        if(DEBUG) fprintf(stderr, "usb_get_driver_np failure : %s\n", usb_strerror());
+        if(debug) fprintf(stderr, "usb_get_driver_np failure : %s\n", usb_strerror());
     }
     if (usb_claim_interface(udev, interface)==0) {
         usb_set_altinterface(udev, interface);
     } else {
-        if(DEBUG) fprintf(stderr, "usb_claim_interface failure: %s\n", usb_strerror());
+        if(debug) fprintf(stderr, "usb_claim_interface failure: %s\n", usb_strerror());
         return K8055_ERROR;
     }
     usb_set_configuration(udev, 1);
-    if (DEBUG) fprintf(stderr, "Found interface %d\, took over the device\n", interface);
+    if (debug) fprintf(stderr, "Found interface %d, took over the device\n", interface);
     return 0;
 }
 
-/* Open device - scan through usb busses looking for the right device,
-   claim it and then open the device
-*/
-int OpenDevice(long BoardAddress)
-{
-
-    int ipid;
-
-    /* init USB and find all of the devices on all busses */
-    init_usb();
-
-    /* ID of the welleman board is 5500h + address config */
-    if (BoardAddress >= 0 && BoardAddress < K8055_MAX_DEV)
-        ipid = K8055_IPID + (int)BoardAddress;
-    else
-        return K8055_ERROR;              /* throw error instead of being nice */
-
-    /* start looping through the devices to find the correct one */
-    for (bus = busses; bus; bus = bus->next)
-    {
-        for (dev = bus->devices; dev; dev = dev->next)
-        {
-            if ((dev->descriptor.idVendor == VELLEMAN_VENDOR_ID) &&
-                (dev->descriptor.idProduct == ipid))
-            {
-                curr_dev = &k8055d[BoardAddress];
-                curr_dev->device_handle = usb_open(dev);
-                if (DEBUG)
-                    fprintf(stderr,
-                            "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n",
-                            dev->filename, dev->descriptor.idVendor,
-                            dev->descriptor.idProduct);
-                if (takeover_device(curr_dev->device_handle, 0) < 0)
-                {
-                    if (DEBUG)
-                        fprintf(stderr,
-                                "Can not take over the device from the OS driver\n");
-                    usb_close(curr_dev->device_handle);   /* close usb if we fail */
-                    return K8055_ERROR;  /* throw K8055_ERROR to show that OpenDevice failed */
+/* Open device - scan through usb busses looking for the right device, claim it and then open the device */
+int OpenDevice( long board_address ) {
+    if( board_address<0 || board_address>=K8055_MAX_DEV ) return K8055_ERROR;
+    if(k8055d[board_address].dev_no!=0) return board_address;
+    usb_init();
+    usb_find_busses();
+    usb_find_devices();
+    int ipid = K8055_IPID + (int)board_address;
+    struct usb_bus* busses = usb_get_busses();
+    for( struct usb_bus* bus=busses; bus; bus=bus->next ) {
+        for( struct usb_device* dev=bus->devices; dev; dev=dev->next ) {
+            if((dev->descriptor.idVendor==VELLEMAN_VENDOR_ID) && (dev->descriptor.idProduct==ipid)) {
+                struct k8055_dev *kdev = &k8055d[board_address];
+                kdev->dev_no = 0;
+                kdev->device_handle = usb_open(dev);
+                if(kdev->device_handle==0) {
+                    if(debug) fprintf(stderr,"usb_open failure : %s\n", usb_strerror());
+                    return K8055_ERROR;
                 }
-                else
-                {
-                    curr_dev->dev_no = BoardAddress + 1; /* Mark as open and valid */
-                    SetCurrentDevice(BoardAddress);
-                    memset(curr_dev->data_out,0,PACKET_LEN);	/* Write cmd 0, read data */
-                    curr_dev->data_out[0] = CMD_RESET;
-                    k8055_write(curr_dev);
-                    if (k8055_read(curr_dev) == 0)
-                       return BoardAddress;		/* This function should return board address */
-                    else
-                       return K8055_ERROR;
+                if(debug) fprintf(stderr, "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n", dev->filename, dev->descriptor.idVendor, dev->descriptor.idProduct);
+                if(takeover_device(kdev->device_handle, 0)<0) {
+                    if(debug) fprintf(stderr, "Can not take over the device from the OS driver\n");
+                    usb_close(kdev->device_handle);
+                    return K8055_ERROR;
+                } else {
+                    memset(kdev->data_out,0,PACKET_LEN);
+                    kdev->dev_no = board_address + 1;
+                    kdev->data_out[0] = CMD_RESET;
+                    k8055_write(kdev);
+                    if (k8055_read(kdev)==0) {
+                        if(debug) fprintf(stderr, "OKOK\n");
+                        curr_dev = kdev;
+                        return board_address;
+                    } else {
+                        kdev->dev_no = 0;
+                        usb_close(kdev->device_handle);
+                        return K8055_ERROR;
+                    }
                 }
             }
         }
     }
-    if (DEBUG)
-        fprintf(stderr, "Could not find Velleman k8055 with address %d\n",
-                (int)BoardAddress);
+    if(debug) fprintf(stderr, "Could not find Velleman k8055 with address %d\n",(int)board_address);
     return K8055_ERROR;
 }
 
@@ -262,7 +250,7 @@ int CloseDevice()
 
      if (curr_dev->dev_no == 0)
      {
-         if (DEBUG)
+         if (debug)
              fprintf(stderr, "Current device is not open\n" );
          return 0;
      }
@@ -309,6 +297,7 @@ long SearchDevices(void)
             }
         }
     }
+    if(debug) fprintf(stderr,"found devices : %X\n",retval);
     return retval; 
 }
 
@@ -551,7 +540,7 @@ int SetCounterDebounceTime(long CounterNo, long DebounceTime)
         if (value > ((int)value + 0.49999999))  /* simple round() function) */
             value += 1;
         curr_dev->data_out[5 + CounterNo] = (unsigned char)value;
-        if (DEBUG)
+        if (debug)
             fprintf(stderr, "Debouncetime%d value for k8055:%d\n",
                     (int)CounterNo, curr_dev->data_out[5 + CounterNo]);
         return k8055_write(curr_dev);
