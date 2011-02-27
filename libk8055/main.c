@@ -43,7 +43,7 @@
 #define false 0
 #define true 1
 
-extern int DEBUG;
+extern int debug;
 
 int ia1 = -1;
 int ia2 = -1;
@@ -51,8 +51,6 @@ int id8 = -1;
 int ipid = 0;
 
 int numread = 1;
-
-int debug = 0;
 
 int dbt1 = -1; // (-1 => not to set)
 int dbt2 = -1; // (-1 => not to set)
@@ -147,7 +145,6 @@ int read_param(int argc,char *params[])
 		else
 			if ( !strcmp(params[i],"-debug") ){
 			   debug = true;
-			   DEBUG = true;
 			}
 		else
 			if ( !strcmp(params[i],"-reset1") ) resetcnt1 = true;
