@@ -145,32 +145,25 @@ static void init_usb(void) {
     }
 }
 
-/* Actual read of data from the device endpoint, retry 3 times if not responding ok */
+/* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
 static int k8055_read( struct k8055_dev* dev ) {
-    if ( dev->dev_no==0 ) return K8055_ERROR;
-    for ( int i=0; i<READ_RETRY; i++ ) {
+    if (dev->dev_no==0) return K8055_ERROR;
+    for (int i=0; i<READ_RETRY; i++) {
         int read_status = usb_interrupt_read(dev->device_handle, USB_INP_EP, (char*)dev->data_in, PACKET_LEN, USB_TIMEOUT);
-        if ( (read_status == PACKET_LEN) && (dev->data_in[1] == dev->dev_no) ) return 0;
-        if ( DEBUG) fprintf(stderr, "Read retry\n");
+        if ( (read_status==PACKET_LEN) && (dev->data_in[1]==dev->dev_no) ) return 0;
+        if ( DEBUG) fprintf(stderr, "k8055 read retry\n");
     }
     return K8055_ERROR;
 }
 
-/* Actual write of data to the device endpont, retry 3 times if not reponding correctly */
-static int WriteK8055Data(unsigned char cmd)
-{
-    int write_status = 0, i = 0;
-
-    if (curr_dev->dev_no == 0) return K8055_ERROR;
-
-    curr_dev->data_out[0] = cmd;
-    for(i=0; i < WRITE_RETRY; i++)
-        {
-        write_status = usb_interrupt_write(curr_dev->device_handle, USB_OUT_EP, (char *)curr_dev->data_out, PACKET_LEN, USB_TIMEOUT);
-        if (write_status == PACKET_LEN) return 0;
-        if (DEBUG)
-            fprintf(stderr, "Write retry\n");
-        }
+/* Actual write of data to the device endpont, retry WRITE_RETRY times if not reponding correctly */
+static int k8055_write( struct k8055_dev* dev ) {
+    if (dev->dev_no == 0) return K8055_ERROR;
+    for(int i=0; i<WRITE_RETRY; i++) {
+        int write_status = usb_interrupt_write(dev->device_handle, USB_OUT_EP, (char*)dev->data_out, PACKET_LEN, USB_TIMEOUT);
+        if (write_status==PACKET_LEN) return 0;
+        if (DEBUG) fprintf(stderr, "k8055 write retry\n");
+    }
     return K8055_ERROR;
 }
 
@@ -264,7 +257,8 @@ int OpenDevice(long BoardAddress)
                     curr_dev->dev_no = BoardAddress + 1; /* Mark as open and valid */
                     SetCurrentDevice(BoardAddress);
                     memset(curr_dev->data_out,0,PACKET_LEN);	/* Write cmd 0, read data */
-                    WriteK8055Data(CMD_RESET);
+                    curr_dev->data_out[0] = CMD_RESET;
+                    k8055_write(curr_dev);
                     if (k8055_read(curr_dev) == 0)
                        return BoardAddress;		/* This function should return board address */
                     else
@@ -370,12 +364,12 @@ int OutputAnalogChannel(long Channel, long data)
 {
     if (Channel == 1 || Channel == 2)
     {
+        curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
         if (Channel == 2)
             curr_dev->data_out[ANALOG_2_OFFSET] = (unsigned char)data;
         else
             curr_dev->data_out[ANALOG_1_OFFSET] = (unsigned char)data;
-
-        return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
+        return k8055_write(curr_dev);
     }
     else
         return K8055_ERROR;
@@ -383,10 +377,10 @@ int OutputAnalogChannel(long Channel, long data)
 
 int OutputAllAnalog(long data1, long data2)
 {
+    curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     curr_dev->data_out[2] = (unsigned char)data1;
     curr_dev->data_out[3] = (unsigned char)data2;
-
-    return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
+    return k8055_write(curr_dev);
 }
 
 int ClearAllAnalog()
@@ -428,8 +422,9 @@ int SetAllAnalog()
 
 int WriteAllDigital(long data)
 {
+    curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     curr_dev->data_out[1] = (unsigned char)data;
-    return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
+    return k8055_write(curr_dev);
 }
 
 int ClearDigitalChannel(long Channel)
@@ -516,11 +511,12 @@ int ReadAllValues(long int *data1, long int * data2, long int * data3, long int 
 
 int SetAllValues(int DigitalData, int AdData1, int AdData2)
 {
+    curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     curr_dev->data_out[1] = (unsigned char)DigitalData;
     curr_dev->data_out[2] = (unsigned char)AdData1;
     curr_dev->data_out[3] = (unsigned char)AdData2;
 
-    return WriteK8055Data(CMD_SET_ANALOG_DIGITAL);
+    return k8055_write(curr_dev);
 }
 
 int ResetCounter(long CounterNo)
@@ -529,7 +525,7 @@ int ResetCounter(long CounterNo)
     {
         curr_dev->data_out[0] = 0x02 + (unsigned char)CounterNo;  /* counter selection */
         curr_dev->data_out[3 + CounterNo] = 0x00;
-        return WriteK8055Data(curr_dev->data_out[0]);
+        return k8055_write(curr_dev);
     }
     else
         return K8055_ERROR;
@@ -576,7 +572,7 @@ int SetCounterDebounceTime(long CounterNo, long DebounceTime)
         if (DEBUG)
             fprintf(stderr, "Debouncetime%d value for k8055:%d\n",
                     (int)CounterNo, curr_dev->data_out[5 + CounterNo]);
-        return WriteK8055Data(curr_dev->data_out[0]);
+        return k8055_write(curr_dev);
     }
     else
         return K8055_ERROR;
