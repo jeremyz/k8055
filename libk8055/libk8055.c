@@ -220,6 +220,7 @@ int OpenDevice( long board_address ) {
                 if(takeover_device(kdev->device_handle, 0)<0) {
                     if(debug) fprintf(stderr, "Can not take over the device from the OS driver\n");
                     usb_close(kdev->device_handle);
+                    kdev->device_handle = NULL;
                     return K8055_ERROR;
                 } else {
                     memset(kdev->data_out,0,PACKET_LEN);
@@ -227,12 +228,14 @@ int OpenDevice( long board_address ) {
                     kdev->data_out[0] = CMD_RESET;
                     k8055_write(kdev);
                     if (k8055_read(kdev)==0) {
-                        if(debug) fprintf(stderr, "OKOK\n");
+                        if(debug) fprintf(stderr, "Device %d ready\n",board_address);
                         curr_dev = kdev;
                         return board_address;
                     } else {
+                        if(debug) fprintf(stderr, "Device %d not ready\n",board_address);
                         kdev->dev_no = 0;
                         usb_close(kdev->device_handle);
+                        kdev->device_handle = NULL;
                         return K8055_ERROR;
                     }
                 }
