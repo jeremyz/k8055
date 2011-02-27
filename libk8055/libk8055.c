@@ -146,19 +146,13 @@ static void init_usb(void) {
 }
 
 /* Actual read of data from the device endpoint, retry 3 times if not responding ok */
-static int ReadK8055Data(void)
-{
-    int read_status = 0, i = 0;
-
-    if (curr_dev->dev_no == 0) return K8055_ERROR;
-
-    for(i=0; i < READ_RETRY; i++)
-        {
-        read_status = usb_interrupt_read(curr_dev->device_handle, USB_INP_EP, (char *)curr_dev->data_in, PACKET_LEN, USB_TIMEOUT);
-        if ((read_status == PACKET_LEN) && (curr_dev->data_in[1] == curr_dev->dev_no )) return 0;
-        if (DEBUG)
-            fprintf(stderr, "Read retry\n");
-        }
+static int k8055_read( struct k8055_dev* dev ) {
+    if ( dev->dev_no==0 ) return K8055_ERROR;
+    for ( int i=0; i<READ_RETRY; i++ ) {
+        int read_status = usb_interrupt_read(dev->device_handle, USB_INP_EP, (char*)dev->data_in, PACKET_LEN, USB_TIMEOUT);
+        if ( (read_status == PACKET_LEN) && (dev->data_in[1] == dev->dev_no) ) return 0;
+        if ( DEBUG) fprintf(stderr, "Read retry\n");
+    }
     return K8055_ERROR;
 }
 
@@ -271,7 +265,7 @@ int OpenDevice(long BoardAddress)
                     SetCurrentDevice(BoardAddress);
                     memset(curr_dev->data_out,0,PACKET_LEN);	/* Write cmd 0, read data */
                     WriteK8055Data(CMD_RESET);
-                    if (ReadK8055Data() == 0)
+                    if (k8055_read(curr_dev) == 0)
                        return BoardAddress;		/* This function should return board address */
                     else
                        return K8055_ERROR;
@@ -346,7 +340,7 @@ long ReadAnalogChannel(long Channel)
 {
     if (Channel == 1 || Channel == 2)
     {
-        if ( ReadK8055Data() == 0)
+        if ( k8055_read(curr_dev) == 0)
         {
             if (Channel == 2)
                 return curr_dev->data_in[ANALOG_2_OFFSET];
@@ -362,7 +356,7 @@ long ReadAnalogChannel(long Channel)
 
 int ReadAllAnalog(long *data1, long *data2)
 {
-    if (ReadK8055Data() == 0)
+    if ( k8055_read(curr_dev) == 0)
     {
         *data1 = curr_dev->data_in[ANALOG_1_OFFSET];
         *data2 = curr_dev->data_in[ANALOG_2_OFFSET];
@@ -490,7 +484,7 @@ long ReadAllDigital()
 {
     int return_data = 0;
 
-    if (ReadK8055Data() == 0)
+    if ( k8055_read(curr_dev) == 0)
     {
         return_data = (
                 ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
@@ -504,7 +498,7 @@ long ReadAllDigital()
 
 int ReadAllValues(long int *data1, long int * data2, long int * data3, long int * data4, long int * data5)
 {
-    if (ReadK8055Data() == 0)
+    if ( k8055_read(curr_dev) == 0)
     {
         *data1 = (
                 ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
@@ -545,7 +539,7 @@ long ReadCounter(long CounterNo)
 {
     if (CounterNo == 1 || CounterNo == 2)
     {
-        if (ReadK8055Data() == 0)
+        if ( k8055_read(curr_dev) == 0)
         {
             if (CounterNo == 2)
                 return *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
