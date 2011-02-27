@@ -1,4 +1,12 @@
 #! /bin/bash
+if [ -x ./k8055 ]; then
+    K8055=./k8055
+elif [ -x ./build/libk8055/k8055 ]; then
+    K8055=./build/libk8055/k8055
+else
+    echo "unable to find k8055 binary" && exit 1
+fi
 cpt=0
-while [ $cpt -lt 256 ]; do ./build/libk8055/k8055 -d:$cpt -a1:$cpt -a2:$cpt; ((cpt=cpt+1)); done
-./build/libk8055/k8055 -d:0 -a1:0 -a2:0
+$K8055 -debug
+while [ $cpt -lt 256 ]; do $K8055 -d:$cpt -a1:$cpt -a2:$cpt >/dev/null; ((cpt=cpt+1)); echo -n "."; done
+echo "" && $K8055 -debug -d:0 -a1:0 -a2:0
