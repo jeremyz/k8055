@@ -147,68 +147,50 @@ static void init_usb(void) {
 
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
 static int k8055_read( struct k8055_dev* dev ) {
-    if (dev->dev_no==0) return K8055_ERROR;
-    for (int i=0; i<READ_RETRY; i++) {
+    if(dev->dev_no==0) return K8055_ERROR;
+    for(int i=0; i<READ_RETRY; i++) {
         int read_status = usb_interrupt_read(dev->device_handle, USB_INP_EP, (char*)dev->data_in, PACKET_LEN, USB_TIMEOUT);
-        if ( (read_status==PACKET_LEN) && (dev->data_in[1]==dev->dev_no) ) return 0;
-        if ( DEBUG) fprintf(stderr, "k8055 read retry\n");
+        if( (read_status==PACKET_LEN) && (dev->data_in[1]==dev->dev_no) ) return 0;
+        if(DEBUG) fprintf(stderr, "k8055 read retry\n");
     }
     return K8055_ERROR;
 }
 
 /* Actual write of data to the device endpont, retry WRITE_RETRY times if not reponding correctly */
 static int k8055_write( struct k8055_dev* dev ) {
-    if (dev->dev_no == 0) return K8055_ERROR;
+    if(dev->dev_no == 0) return K8055_ERROR;
     for(int i=0; i<WRITE_RETRY; i++) {
         int write_status = usb_interrupt_write(dev->device_handle, USB_OUT_EP, (char*)dev->data_out, PACKET_LEN, USB_TIMEOUT);
-        if (write_status==PACKET_LEN) return 0;
-        if (DEBUG) fprintf(stderr, "k8055 write retry\n");
+        if(write_status==PACKET_LEN) return 0;
+        if(DEBUG) fprintf(stderr, "k8055 write retry\n");
     }
     return K8055_ERROR;
 }
 
 /* If device is owned by some kernel driver, try to disconnect it and claim the device*/
-static int takeover_device(usb_dev_handle * udev, int interface)
-{
+static int takeover_device(usb_dev_handle * udev, int interface) {
     char driver_name[STR_BUFF];
-
     memset(driver_name, 0, STR_BUFF);
     int ret = K8055_ERROR;
-
     assert(udev != NULL);
-    ret = usb_get_driver_np(udev, interface, driver_name, sizeof(driver_name));
-    if (ret == 0)
-    {
-        if (DEBUG)
-            fprintf(stderr, "Got driver name: %s\n", driver_name);
-        if (0 > usb_detach_kernel_driver_np(udev, interface))
-        {
-            if (DEBUG)
-                fprintf(stderr, "Disconnect OS driver: %s\n", usb_strerror());
+    if(usb_get_driver_np(udev, interface, driver_name, sizeof(driver_name))==0) {
+        if(DEBUG) fprintf(stderr, "usb_get_driver_np success: %s\n", driver_name);
+        if(usb_detach_kernel_driver_np(udev, interface)==0) {
+            if(DEBUG) fprintf(stderr, "usb_detach_kernel_driver_np success");
+        } else {
+            if(DEBUG) fprintf(stderr, "usb_detach_kernel_driver_np failure : %s\n", usb_strerror());
         }
-        else if (DEBUG)
-            fprintf(stderr, "Disconnected OS driver: %s\n", usb_strerror());
+    } else {
+        if(DEBUG) fprintf(stderr, "usb_get_driver_np failure : %s\n", usb_strerror());
     }
-    else if (DEBUG)
-        fprintf(stderr, "Get driver name: - %s\n", usb_strerror());
-
-    /* claim interface */
-    if (usb_claim_interface(udev, interface) < 0)
-    {
-        if (DEBUG)
-            fprintf(stderr, "Claim interface error: %s\n", usb_strerror());
+    if (usb_claim_interface(udev, interface)==0) {
+        usb_set_altinterface(udev, interface);
+    } else {
+        if(DEBUG) fprintf(stderr, "usb_claim_interface failure: %s\n", usb_strerror());
         return K8055_ERROR;
     }
-    else
-        usb_set_altinterface(udev, interface);
     usb_set_configuration(udev, 1);
-
-    if (DEBUG)
-        {
-        fprintf(stderr, "Found interface %d\n", interface);
-        fprintf(stderr, "Took over the device\n");
-        }
-
+    if (DEBUG) fprintf(stderr, "Found interface %d\, took over the device\n", interface);
     return 0;
 }
 
