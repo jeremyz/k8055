@@ -23,32 +23,65 @@
 extern "C" {
 #endif
 
-/* prototypes */
-int OpenDevice(long board_address);
-int CloseDevice();
-long ReadAnalogChannel(long Channelno);
-int ReadAllAnalog(long* data1, long* data2);
-int OutputAnalogChannel(long channel, long data);
-int OutputAllAnalog(long data1,long data2);
-int ClearAllAnalog();
-int ClearAnalogChannel(long channel);
-int SetAnalogChannel(long channel);
-int SetAllAnalog();
-int WriteAllDigital(long data);
-int ClearDigitalChannel(long channel);
-int ClearAllDigital();
-int SetDigitalChannel(long channel);
-int SetAllDigital();
-int ReadDigitalChannel(long channel);
-long ReadAllDigital();
-int ResetCounter(long counternr);
-long ReadCounter(long counterno);
-int SetCounterDebounceTime(long counterno, long debouncetime);
-int ReadAllValues (long int  *data1, long int *data2, long int *data3, long int *data4, long int *data5);
-int SetAllValues(int digitaldata, int addata1, int addata2);
-long SetCurrentDevice(long deviceno);
-long SearchDevices(void);
-char *Version(void);
+#define PACKET_LEN 8
+
+    struct k8055_dev {
+        int dev_no;
+        struct usb_dev_handle* device_handle;
+        unsigned char data_in[PACKET_LEN+1];
+        unsigned char data_out[PACKET_LEN+1];
+    };
+
+    long search_devices( void );
+    int open_device( struct k8055_dev* dev, long board_address );
+    int close_device( struct k8055_dev* dev );
+    long read_analog_channel( struct k8055_dev* dev, long channel );
+    int read_all_analog( struct k8055_dev* dev, long* data1, long* data2 );
+    int output_analog_channel( struct k8055_dev* dev ,long channel, long data );
+    int output_all_analog( struct k8055_dev* dev, long data1, long data2 );
+    int clear_all_analog( struct k8055_dev* dev );
+    int clear_analog_channel( struct k8055_dev* dev, long channel );
+    int set_analog_channel( struct k8055_dev* dev, long channel );
+    int set_all_analog( struct k8055_dev* dev );
+    int write_all_digital( struct k8055_dev* dev, long data );
+    int clear_digital_channel( struct k8055_dev* dev, long channel );
+    int clear_all_digital( struct k8055_dev* dev );
+    int set_digital_channel( struct k8055_dev* dev, long channel );
+    int set_all_digital( struct k8055_dev* dev );
+    int read_digital_channel( struct k8055_dev* dev, long channel );
+    long read_all_digital( struct k8055_dev* dev );
+    int read_all_values( struct k8055_dev* dev, long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 );
+    int set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 );
+    int reset_counter( struct k8055_dev* dev, long counter );
+    long read_counter( struct k8055_dev* dev, long counter );
+    int set_counter_debounce_time( struct k8055_dev* dev, long counter, long debounce_time );
+
+    /* Velleman API */
+    char* Version( void );
+    long SearchDevices( void );
+    int OpenDevice( long board_address );
+    int CloseDevice();
+    long SetCurrentDevice( long deviceno );
+    long ReadAnalogChannel( long Channelno );
+    int ReadAllAnalog( long* data1, long* data2 );
+    int OutputAnalogChannel( long channel, long data );
+    int OutputAllAnalog( long data1,long data2 );
+    int ClearAllAnalog();
+    int ClearAnalogChannel( long channel );
+    int SetAnalogChannel( long channel );
+    int SetAllAnalog();
+    int WriteAllDigital( long data );
+    int ClearDigitalChannel( long channel );
+    int ClearAllDigital();
+    int SetDigitalChannel( long channel );
+    int SetAllDigital();
+    int ReadDigitalChannel( long channel );
+    long ReadAllDigital();
+    int ReadAllValues ( long int*  data1, long int* data2, long int* data3, long int* data4, long int* data5 );
+    int SetAllValues( int digitaldata, int addata1, int addata2 );
+    int ResetCounter( long counternr );
+    long ReadCounter( long counterno );
+    int SetCounterDebounceTime( long counterno, long debouncetime );
 #ifdef __cplusplus
 }
 #endif
