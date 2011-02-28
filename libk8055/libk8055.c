@@ -247,23 +247,22 @@ int OpenDevice( long board_address ) {
 }
 
 /* Close the Current device */
-int CloseDevice()
-{
-     int rc;
-
-     if (curr_dev->dev_no == 0)
-     {
-         if (debug)
-             fprintf(stderr, "Current device is not open\n" );
-         return 0;
-     }
-     rc = usb_close(curr_dev->device_handle);
-     if (rc >= 0)
-     {
-         curr_dev->dev_no = 0;  /* Not active nay more */
-         curr_dev->device_handle = NULL;
-     }
-     return rc;
+int CloseDevice() {
+    if (curr_dev->dev_no == 0) {
+        if (debug) fprintf(stderr, "Current device is not open\n" );
+        return 0;
+    }
+    if(curr_dev->dev_hanlde==NULL) {
+        if (debug) fprintf(stderr, "Current device is marked as open, but device hanlde is NULL\n" );
+        curr_dev->dev_no = 0;
+        return 0;
+    }
+    int rc = usb_close(curr_dev->device_handle);
+    if (rc >= 0) {
+        curr_dev->dev_no = 0;
+        curr_dev->device_handle = NULL;
+    }
+    return rc;
 }
 
 /* New function in version 2 of Velleman DLL, should return deviceno if OK */
