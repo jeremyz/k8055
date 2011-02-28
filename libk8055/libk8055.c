@@ -266,18 +266,11 @@ int CloseDevice() {
 }
 
 /* New function in version 2 of Velleman DLL, should return deviceno if OK */
-long SetCurrentDevice(long deviceno)
-{
-    if (deviceno >= 0 && deviceno < K8055_MAX_DEV)
-    {
-        if (k8055d[deviceno].dev_no != 0)
-        {
-            curr_dev  = &k8055d[deviceno];
-            return deviceno;
-        }
-    }
-    return K8055_ERROR;
-
+long SetCurrentDevice(long deviceno) {
+    if (deviceno < 0 || deviceno >= K8055_MAX_DEV) return K8055_ERROR;
+    if (k8055d[deviceno].dev_no == 0) return K8055_ERROR;
+    curr_dev  = &k8055d[deviceno];
+    return deviceno;
 }
 
 /* New function in version 2 of Velleman DLL, should return devices-found bitmask or 0*/
