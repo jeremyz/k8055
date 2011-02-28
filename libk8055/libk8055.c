@@ -172,6 +172,10 @@ static int takeover_device( usb_dev_handle* udev, int interface ) {
     return 0;
 }
 
+char* version( void ) {
+    return( VERSION );
+}
+
 int open_device( struct k8055_dev* dev, long board_address ) {
     usb_init();
     usb_find_busses();

@@ -32,6 +32,7 @@ extern "C" {
         unsigned char data_out[PACKET_LEN+1];
     };
 
+    char* version( void );
     long search_devices( void );
     int open_device( struct k8055_dev* dev, long board_address );
     int close_device( struct k8055_dev* dev );
