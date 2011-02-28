@@ -75,7 +75,7 @@ int Convert_StringToInt(char *text, int *i)
 */
 void display_help ( char *params[] ) {
 
-	printf("K8055 version %s MrBrain Build\n",Version());
+	printf("K8055 version %s MrBrain Build\n",version());
 	printf("Copyright (C) 2004 by Nicolas Sutre\n");
 	printf("Copyright (C) 2005 by Bob Dempsey\n");
 	printf("Copyright (C) 2005 by Julien Etelain and Edward Nys\n");
@@ -221,48 +221,49 @@ int main (int argc,char *params[])
 		/*
 			Search the device
 		*/
-		if ( OpenDevice(ipid)<0 ) {
+        struct k8055_dev dev;
+		if ( open_device(&dev, ipid)<0 ) {
 			printf("Could not open the k8055 (port:%d)\nPlease ensure that the device is correctly connected.\n",ipid);
 			return (-1);
 			
 		} else {
 
 			if ( resetcnt1 )
-				ResetCounter(1);
+				reset_counter(&dev,1);
 			if ( resetcnt2 )
-				ResetCounter(2);	
+				reset_counter(&dev,2);	
 			if ( dbt1 != -1 )
-				SetCounterDebounceTime(1,dbt1);
+				set_counter_debounce_time(&dev,1,dbt1);
 			if ( dbt2 != -1 )
-				SetCounterDebounceTime(2,dbt1);
+				set_counter_debounce_time(&dev,2,dbt1);
 
 			if ((ia1!=-1) && (ia2!=-1) && (id8!=-1)) {
-				result = SetAllValues(id8,ia1,ia2);
+				result = set_all_values(&dev,id8,ia1,ia2);
 				if (debug) printf("SetAllValues=%d - Digital:%d, analog1:%d, analog2:%d\n",result,id8,ia1,ia2);
 				}
 			else if ((id8 != -1) && (ia1!=-1)) {
-				result = SetAllValues(id8,ia1,0);
+				result = set_all_values(&dev,id8,ia1,0);
 				if (debug) printf("SetAllValues=%d - Digital:%d, analog1:%d\n",result,id8,ia1);
 				}
 			else if ((id8 != -1) && (ia2!=-1)) {
-				result = SetAllValues(id8,0,ia2);
+				result = set_all_values(&dev,id8,0,ia2);
 				if (debug) printf("SetAllValues=%d - Digital:%d, analog2:%d\n",result,id8,ia2);
 				}
 			else if ((ia1 != -1) && (ia2!=-1)) {
-				result = SetAllValues(0,ia1,ia2);
+				result = set_all_values(&dev,0,ia1,ia2);
 				if (debug) printf("SetAllValues=%d - analog1:%d, analog2:%d\n",result,ia1,ia2);
 				}
 			else {
 				if (ia1!=-1) {
-					result=OutputAnalogChannel(1,ia1);
+					result=output_analog_channel(&dev,1,ia1);
 					if (debug) printf("Set analog1:%d=>%d\n",ia1,result);
 					}
 				if (ia2!=-1) {
-					result=OutputAnalogChannel(2,ia2);
+					result=output_analog_channel(&dev,2,ia2);
 					if (debug) printf("Set analog2:%d=>%d\n",ia2,result);
 					}
 				if (id8!=-1) {
-					result=WriteAllDigital((long)id8);
+					result=write_all_digital(&dev,(long)id8);
 					if (debug) printf("Set digital:%d=>%d\n",id8,result);
 					}
 				}
@@ -274,7 +275,7 @@ int main (int argc,char *params[])
 					// Wait until next measure
 					while ( time_msec()-mstart < i*delay );
 				}
-				ReadAllValues( &d,&a1,&a2,&c1,&c2); 
+				read_all_values( &dev,&d,&a1,&a2,&c1,&c2); 
 
 /*				ReadAllAnalog(&a1,&a2);
 				d=ReadAllDigital();
@@ -285,7 +286,7 @@ int main (int argc,char *params[])
 				printf("%d;%d;%d;%d;%d;%d\n", (int)(lastcall-start),(int)d, (int)a1, (int)a2,(int)c1,(int)c2 );
 			}
 			
-			CloseDevice();
+			close_device(&dev);
 		}
 	}
 	return 0;
