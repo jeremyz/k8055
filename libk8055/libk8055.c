@@ -328,7 +328,7 @@ int clear_digital_channel( struct k8055_dev* dev, long channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
     data = dev->data_out[1] & ~( 1 << ( channel-1 ) );
-    return WriteAllDigital( data );
+    return write_all_digital( dev, data );
 }
 
 int clear_all_digital( struct k8055_dev* dev ) {
