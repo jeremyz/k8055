@@ -274,21 +274,20 @@ long SetCurrentDevice(long deviceno) {
 }
 
 /* New function in version 2 of Velleman DLL, should return devices-found bitmask or 0*/
-long SearchDevices(void)
-{
+long SearchDevices(void) {
     int retval = 0;
-    init_usb();
-    /* start looping through the devices to find the correct one */
-    for (bus = busses; bus; bus = bus->next)
-    {
-        for (dev = bus->devices; dev; dev = dev->next)
-        {
+    usb_init();
+    usb_find_busses();
+    usb_find_devices();
+    struct usb_bus* busses = usb_get_busses();
+    for (struct usb_bus* bus = busses; bus; bus = bus->next) {
+        for( struct usb_device* dev=bus->devices; dev; dev=dev->next ) {
             if (dev->descriptor.idVendor == VELLEMAN_VENDOR_ID) { 
-               if(dev->descriptor.idProduct == K8055_IPID + 0) retval |= 0x01;
-               if(dev->descriptor.idProduct == K8055_IPID + 1) retval |= 0x02;
-               if(dev->descriptor.idProduct == K8055_IPID + 2) retval |= 0x04;
-               if(dev->descriptor.idProduct == K8055_IPID + 3) retval |= 0x08;
-            /* else some other kind of Velleman board */
+                if(dev->descriptor.idProduct == K8055_IPID + 0) retval |= 0x01;
+                if(dev->descriptor.idProduct == K8055_IPID + 1) retval |= 0x02;
+                if(dev->descriptor.idProduct == K8055_IPID + 2) retval |= 0x04;
+                if(dev->descriptor.idProduct == K8055_IPID + 3) retval |= 0x08;
+                /* else some other kind of Velleman board */
             }
         }
     }
