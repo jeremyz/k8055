@@ -342,165 +342,112 @@ int SetAllAnalog() {
     return OutputAllAnalog(0xff, 0xff);
 }
 
-int WriteAllDigital(long data)
-{
+int WriteAllDigital(long data) {
     curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     curr_dev->data_out[1] = (unsigned char)data;
     return k8055_write(curr_dev);
 }
 
-int ClearDigitalChannel(long Channel)
-{
+int ClearDigitalChannel(long channel) {
     unsigned char data;
-
-    if (Channel > 0 && Channel < 9)
-    {
-	data = curr_dev->data_out[1] & ~(1 << (Channel-1));
-        return WriteAllDigital(data);
-    }
-    else
-        return K8055_ERROR;
+    if (channel<1 || channel>8) return K8055_ERROR;
+    data = curr_dev->data_out[1] & ~(1 << (channel-1));
+    return WriteAllDigital(data);
 }
 
-int ClearAllDigital()
-{
+int ClearAllDigital() {
     return WriteAllDigital(0x00);
 }
 
-int SetDigitalChannel(long Channel)
-{
+int SetDigitalChannel(long channel) {
     unsigned char data;
-
-    if (Channel > 0 && Channel < 9)
-    {
-        data = curr_dev->data_out[1] | (1 << (Channel-1));
-        return WriteAllDigital(data);
-    }
-    else
-        return K8055_ERROR;
+    if (channel<1 || channel>8) return K8055_ERROR;
+    data = curr_dev->data_out[1] | (1 << (channel-1));
+    return WriteAllDigital(data);
 }
 
-int SetAllDigital()
-{
+int SetAllDigital() {
     return WriteAllDigital(0xff);
 }
 
-int ReadDigitalChannel(long Channel)
-{
+int ReadDigitalChannel(long channel) {
     int rval;
-    if (Channel > 0 && Channel < 9)
-    {
-        if ((rval = ReadAllDigital()) == K8055_ERROR) return K8055_ERROR;
-        return ((rval & (1 << (Channel-1))) > 0);
-    }
-    else
-        return K8055_ERROR;
+    if (channel<1 || channel>8) return K8055_ERROR;
+    if ((rval = ReadAllDigital()) == K8055_ERROR) return K8055_ERROR;
+    return ((rval & (1 << (channel-1))) > 0);
 }
 
-long ReadAllDigital()
-{
+long ReadAllDigital() {
     int return_data = 0;
-
-    if ( k8055_read(curr_dev) == 0)
-    {
-        return_data = (
-                ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
-                ((curr_dev->data_in[0] << 2) & 0x04) |  /* Input 3 */
-                ((curr_dev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
-        return return_data;
-    }
-    else
-        return K8055_ERROR;
+    if ( k8055_read(curr_dev)!=0) return K8055_ERROR;
+    return_data = (
+            ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
+            ((curr_dev->data_in[0] << 2) & 0x04) |  /* Input 3 */
+            ((curr_dev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
+    return return_data;
 }
 
-int ReadAllValues(long int *data1, long int * data2, long int * data3, long int * data4, long int * data5)
-{
-    if ( k8055_read(curr_dev) == 0)
-    {
-        *data1 = (
-                ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
-                ((curr_dev->data_in[0] << 2) & 0x04) |  /* Input 3 */
-                ((curr_dev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
-        *data2 = curr_dev->data_in[ANALOG_1_OFFSET];
-        *data3 = curr_dev->data_in[ANALOG_2_OFFSET];
-        *data4 = *((short int *)(&curr_dev->data_in[COUNTER_1_OFFSET]));
-        *data5 = *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
-        return 0;
-    }
-    else
-        return K8055_ERROR;
+int ReadAllValues(long int *data1, long int * data2, long int * data3, long int * data4, long int * data5) {
+    if ( k8055_read(curr_dev)!=0) return K8055_ERROR;
+    *data1 = (
+            ((curr_dev->data_in[0] >> 4) & 0x03) |  /* Input 1 and 2 */
+            ((curr_dev->data_in[0] << 2) & 0x04) |  /* Input 3 */
+            ((curr_dev->data_in[0] >> 3) & 0x18) ); /* Input 4 and 5 */
+    *data2 = curr_dev->data_in[ANALOG_1_OFFSET];
+    *data3 = curr_dev->data_in[ANALOG_2_OFFSET];
+    *data4 = *((short int *)(&curr_dev->data_in[COUNTER_1_OFFSET]));
+    *data5 = *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
+    return 0;
 }
 
-int SetAllValues(int DigitalData, int AdData1, int AdData2)
-{
+int SetAllValues(int DigitalData, int AdData1, int AdData2) {
     curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     curr_dev->data_out[1] = (unsigned char)DigitalData;
     curr_dev->data_out[2] = (unsigned char)AdData1;
     curr_dev->data_out[3] = (unsigned char)AdData2;
-
     return k8055_write(curr_dev);
 }
 
-int ResetCounter(long CounterNo)
-{
-    if (CounterNo == 1 || CounterNo == 2)
-    {
-        curr_dev->data_out[0] = 0x02 + (unsigned char)CounterNo;  /* counter selection */
-        curr_dev->data_out[3 + CounterNo] = 0x00;
-        return k8055_write(curr_dev);
-    }
-    else
-        return K8055_ERROR;
+int ResetCounter(long counter) {
+    if (!(counter==1 || counter==2)) return K8055_ERROR;
+    curr_dev->data_out[0] = 0x02 + (unsigned char)counter;
+    curr_dev->data_out[3+counter] = 0x00;
+    return k8055_write(curr_dev);
 }
 
-long ReadCounter(long CounterNo)
-{
-    if (CounterNo == 1 || CounterNo == 2)
-    {
-        if ( k8055_read(curr_dev) == 0)
-        {
-            if (CounterNo == 2)
-                return *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
-            else
-                return *((short int *)(&curr_dev->data_in[COUNTER_1_OFFSET]));
-        }
-        else
-            return K8055_ERROR;
+long ReadCounter(long counter) {
+    if (!(counter==1 || counter==2)) return K8055_ERROR;
+    if (k8055_read(curr_dev)!=0) return K8055_ERROR;
+    if (counter==1) {
+        return *((short int *)(&curr_dev->data_in[COUNTER_1_OFFSET]));
+    } else {
+        return *((short int *)(&curr_dev->data_in[COUNTER_2_OFFSET]));
     }
-    else
-        return K8055_ERROR;
 }
 
-int SetCounterDebounceTime(long CounterNo, long DebounceTime)
-{
+int SetCounterDebounceTime(long counter, long debounce_time) {
     float value;
-
-    if (CounterNo == 1 || CounterNo == 2)
-    {
-        curr_dev->data_out[0] = (unsigned char)CounterNo;
-        /* the velleman k8055 use a exponetial formula to split up the
-           DebounceTime 0-7450 over value 1-255. I've tested every value and
-           found that the formula dbt=0,338*value^1,8017 is closest to
-           vellemans dll. By testing and measuring times on the other hand I
-           found the formula dbt=0,115*x^2 quite near the actual values, a
-           little below at really low values and a little above at really
-           high values. But the time set with this formula is within +-4% */
-        if (DebounceTime > 7450)
-            DebounceTime = 7450;
-        value = sqrtf(DebounceTime / 0.115);
-        if (value > ((int)value + 0.49999999))  /* simple round() function) */
-            value += 1;
-        curr_dev->data_out[5 + CounterNo] = (unsigned char)value;
-        if (debug)
-            fprintf(stderr, "Debouncetime%d value for k8055:%d\n",
-                    (int)CounterNo, curr_dev->data_out[5 + CounterNo]);
-        return k8055_write(curr_dev);
-    }
-    else
-        return K8055_ERROR;
+    if (!(counter==1 || counter==2)) return K8055_ERROR;
+    curr_dev->data_out[0] = (unsigned char)counter;
+    /*
+     * the velleman k8055 use a exponetial formula to split up the
+     * debounce_time 0-7450 over value 1-255. I've tested every value and
+     * found that the formula dbt=0,338*value^1,8017 is closest to
+     * vellemans dll. By testing and measuring times on the other hand I
+     * found the formula dbt=0,115*x^2 quite near the actual values, a
+     * little below at really low values and a little above at really
+     * high values. But the time set with this formula is within +-4%
+     *  -- Sven Lindberg
+     */
+    if (debounce_time > 7450) debounce_time = 7450;
+    value = sqrtf(debounce_time / 0.115);
+    /* simple round() function) */
+    if (value > ((int)value + 0.49999999)) value+=1;
+    curr_dev->data_out[5+counter] = (unsigned char)value;
+    if (debug) fprintf(stderr, "Debouncetime%d value for k8055:%d\n",(int)counter, curr_dev->data_out[5+counter]);
+    return k8055_write(curr_dev);
 }
 
-char * Version(void)
-{
+char * Version(void) {
     return(VERSION);
 }
