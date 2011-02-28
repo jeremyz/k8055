@@ -118,10 +118,6 @@
 /* set debug to 0 to not print excess info */
 int debug = 0;
 
-/* variables for usb */
-static struct usb_bus *bus, *busses;
-static struct usb_device *dev;
-
 /* globals for datatransfer */
 struct k8055_dev {
     unsigned char data_in[PACKET_LEN+1];
@@ -132,18 +128,6 @@ struct k8055_dev {
 
 static struct k8055_dev k8055d[K8055_MAX_DEV];
 static struct k8055_dev *curr_dev;
-
-/* Initialize the usb library - only once */
-static void init_usb(void) {
-    static int init_done = 0;
-    if (!init_done)  {
-        usb_init();
-        usb_find_busses();
-        usb_find_devices();
-        busses = usb_get_busses();
-        init_done = 1;
-    }
-}
 
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
 static int k8055_read( struct k8055_dev* dev ) {
