@@ -252,7 +252,7 @@ int CloseDevice() {
         if (debug) fprintf(stderr, "Current device is not open\n" );
         return 0;
     }
-    if(curr_dev->dev_hanlde==NULL) {
+    if(curr_dev->device_handle==NULL) {
         if (debug) fprintf(stderr, "Current device is marked as open, but device hanlde is NULL\n" );
         curr_dev->dev_no = 0;
         return 0;
