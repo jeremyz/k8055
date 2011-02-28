@@ -279,93 +279,66 @@ long SearchDevices(void) {
     return retval; 
 }
 
-long ReadAnalogChannel(long Channel)
-{
-    if (Channel == 1 || Channel == 2)
-    {
-        if ( k8055_read(curr_dev) == 0)
-        {
-            if (Channel == 2)
-                return curr_dev->data_in[ANALOG_2_OFFSET];
-            else
-                return curr_dev->data_in[ANALOG_1_OFFSET];
+long ReadAnalogChannel(long channel) {
+    if (!(channel==1 || channel==2)) return K8055_ERROR;
+    if ( k8055_read(curr_dev)==0) {
+        if (channel==1) {
+            return curr_dev->data_in[ANALOG_1_OFFSET];
+        } else {
+            return curr_dev->data_in[ANALOG_2_OFFSET];
         }
-        else
-            return K8055_ERROR;
     }
-    else
-        return K8055_ERROR;
+    return K8055_ERROR;
 }
 
-int ReadAllAnalog(long *data1, long *data2)
-{
-    if ( k8055_read(curr_dev) == 0)
-    {
-        *data1 = curr_dev->data_in[ANALOG_1_OFFSET];
-        *data2 = curr_dev->data_in[ANALOG_2_OFFSET];
-        return 0;
-    }
-    else
-        return K8055_ERROR;
+int ReadAllAnalog(long *data1, long *data2) {
+    if ( k8055_read(curr_dev)!=0 ) return K8055_ERROR;
+    *data1 = curr_dev->data_in[ANALOG_1_OFFSET];
+    *data2 = curr_dev->data_in[ANALOG_2_OFFSET];
+    return 0;
 }
 
-int OutputAnalogChannel(long Channel, long data)
-{
-    if (Channel == 1 || Channel == 2)
-    {
-        curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
-        if (Channel == 2)
-            curr_dev->data_out[ANALOG_2_OFFSET] = (unsigned char)data;
-        else
-            curr_dev->data_out[ANALOG_1_OFFSET] = (unsigned char)data;
-        return k8055_write(curr_dev);
+int OutputAnalogChannel(long channel, long data) {
+    if (!(channel==1 || channel==2)) return K8055_ERROR;
+    curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
+    if (channel==1) {
+        curr_dev->data_out[ANALOG_1_OFFSET] = (unsigned char)data;
+    } else {
+        curr_dev->data_out[ANALOG_2_OFFSET] = (unsigned char)data;
     }
-    else
-        return K8055_ERROR;
+    return k8055_write(curr_dev);
 }
 
-int OutputAllAnalog(long data1, long data2)
-{
+int OutputAllAnalog(long data1, long data2) {
     curr_dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     curr_dev->data_out[2] = (unsigned char)data1;
     curr_dev->data_out[3] = (unsigned char)data2;
     return k8055_write(curr_dev);
 }
 
-int ClearAllAnalog()
-{
+int ClearAllAnalog() {
     return OutputAllAnalog(0, 0);
 }
 
-int ClearAnalogChannel(long Channel)
-{
-    if (Channel == 1 || Channel == 2)
-    {
-        if (Channel == 2)
-            return OutputAnalogChannel(2, 0);
-        else
-            return OutputAnalogChannel(1, 0);
+int ClearAnalogChannel(long channel) {
+    if (!(channel==1 || channel==2)) return K8055_ERROR;
+    if (channel==1) {
+        return OutputAnalogChannel(1, 0);
+    } else {
+        return OutputAnalogChannel(2, 0);
     }
-    else
-        return K8055_ERROR;
 }
 
-int SetAnalogChannel(long Channel)
-{
-    if (Channel == 1 || Channel == 2)
-    {
-        if (Channel == 2)
-            return OutputAnalogChannel(2, 0xff);
-        else
-            return OutputAnalogChannel(1, 0xff);
+int SetAnalogChannel(long channel) {
+    if (!(channel==1 || channel==2)) return K8055_ERROR;
+    if (channel == 2) {
+        return OutputAnalogChannel(2, 0xff);
+    } else {
+        return OutputAnalogChannel(1, 0xff);
     }
-    else
-        return K8055_ERROR;
-
 }
 
-int SetAllAnalog()
-{
+int SetAllAnalog() {
     return OutputAllAnalog(0xff, 0xff);
 }
 
