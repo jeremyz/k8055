@@ -47,7 +47,7 @@ extern "C" {
 
     int k8055_set_all_analog( struct k8055_dev* dev );
     int k8055_clear_all_analog( struct k8055_dev* dev );
-    int k8055_read_all_analog( struct k8055_dev* dev, long* data1, long* data2 );
+    int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 );
     int k8055_write_all_analog( struct k8055_dev* dev, int data1, int data2 );
 
     int k8055_set_digital_channel( struct k8055_dev* dev, int channel );
@@ -60,7 +60,7 @@ extern "C" {
     int k8055_write_all_digital( struct k8055_dev* dev, int data );
 
     int k8055_set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 );
-    int k8055_read_all_values( struct k8055_dev* dev, long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 );
+    int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
 
     int k8055_reset_counter( struct k8055_dev* dev, int counter );
     int k8055_read_counter( struct k8055_dev* dev, int counter );

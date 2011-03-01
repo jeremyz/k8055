@@ -272,7 +272,7 @@ int k8055_read_analog_channel( struct k8055_dev* dev, int channel ) {
     return K8055_ERROR;
 }
 
-int k8055_read_all_analog( struct k8055_dev* dev, long* data1, long* data2 ) {
+int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     *data1 = dev->data_in[ANALOG_1_OFFSET];
     *data2 = dev->data_in[ANALOG_2_OFFSET];
@@ -368,7 +368,7 @@ int k8055_read_all_digital( struct k8055_dev* dev ) {
     return return_data;
 }
 
-int k8055_read_all_values( struct k8055_dev* dev, long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
+int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     *data1 = (
                  ( ( dev->data_in[0] >> 4 ) & 0x03 ) | /* Input 1 and 2 */
@@ -468,7 +468,11 @@ long ReadAnalogChannel( long channel ) {
     return k8055_read_analog_channel( curr_dev, channel );
 }
 int ReadAllAnalog( long* data1, long* data2 ) {
-    return k8055_read_all_analog( curr_dev, data1, data2 );
+    int d1, d2;
+    int r = k8055_read_all_analog( curr_dev, &d1, &d2 );
+    *data1 = d1;
+    *data2 = d2;
+    return r;
 }
 int OutputAnalogChannel( long channel, long data ) {
     return k8055_write_analog_channel( curr_dev, channel, data );
@@ -510,7 +514,14 @@ long ReadAllDigital() {
     return k8055_read_all_digital( curr_dev );
 }
 int ReadAllValues( long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
-    return k8055_read_all_values( curr_dev, data1, data2, data3, data4, data5 );
+    int d1, d2, d3, d4, d5;
+    int r = k8055_read_all_values( curr_dev, &d1, &d2, &d3, &d4, &d5 );
+    *data1 = d1;
+    *data2 = d2;
+    *data3 = d3;
+    *data4 = d4;
+    *data5 = d5;
+    return r;
 }
 int SetAllValues( int DigitalData, int AdData1, int AdData2 ) {
     return k8055_set_all_values( curr_dev, DigitalData, AdData1, AdData2 );
