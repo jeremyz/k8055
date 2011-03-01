@@ -139,7 +139,7 @@ static int k8055_write( struct k8055_dev* dev ) {
 }
 
 /* If device is owned by some kernel driver, try to disconnect it and claim the device*/
-static int takeover_device( usb_dev_handle* udev, int interface ) {
+static int k8055_takeover_device( usb_dev_handle* udev, int interface ) {
     char driver_name[STR_BUFF];
     memset( driver_name, 0, STR_BUFF );
     int ret = K8055_ERROR;
@@ -165,19 +165,19 @@ static int takeover_device( usb_dev_handle* udev, int interface ) {
     return 0;
 }
 
-void set_debug_on( void ) {
+void k8055_set_debug_on( void ) {
     debug = 1;
 }
 
-void set_debug_off( void ) {
+void k8055_set_debug_off( void ) {
     debug = 0;
 }
 
-char* version( void ) {
+char* k8055_version( void ) {
     return( VERSION );
 }
 
-int open_device( struct k8055_dev* dev, int board_address ) {
+int k8055_open_device( struct k8055_dev* dev, int board_address ) {
     usb_init();
     usb_find_busses();
     usb_find_devices();
@@ -193,7 +193,7 @@ int open_device( struct k8055_dev* dev, int board_address ) {
                     return K8055_ERROR;
                 }
                 if( debug ) fprintf( stderr, "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n", usb_dev->filename, usb_dev->descriptor.idVendor, usb_dev->descriptor.idProduct );
-                if( takeover_device( dev->device_handle, 0 )<0 ) {
+                if( k8055_takeover_device( dev->device_handle, 0 )<0 ) {
                     if( debug ) fprintf( stderr, "Can not take over the device from the OS driver\n" );
                     usb_close( dev->device_handle );
                     dev->device_handle = NULL;
@@ -221,7 +221,7 @@ int open_device( struct k8055_dev* dev, int board_address ) {
     return K8055_ERROR;
 }
 
-int close_device( struct k8055_dev* dev ) {
+int k8055_close_device( struct k8055_dev* dev ) {
     if ( dev->dev_no == 0 ) {
         if ( debug ) fprintf( stderr, "Current device is not open\n" );
         return 0;
@@ -239,7 +239,7 @@ int close_device( struct k8055_dev* dev ) {
     return rc;
 }
 
-long search_devices( void ) {
+long k8055_search_devices( void ) {
     int ret = 0;
     usb_init();
     usb_find_busses();
@@ -260,7 +260,7 @@ long search_devices( void ) {
     return ret;
 }
 
-long read_analog_channel( struct k8055_dev* dev, int channel ) {
+long k8055_read_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( k8055_read( dev )==0 ) {
         if ( channel==1 ) {
@@ -272,14 +272,14 @@ long read_analog_channel( struct k8055_dev* dev, int channel ) {
     return K8055_ERROR;
 }
 
-int read_all_analog( struct k8055_dev* dev, long* data1, long* data2 ) {
+int k8055_read_all_analog( struct k8055_dev* dev, long* data1, long* data2 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     *data1 = dev->data_in[ANALOG_1_OFFSET];
     *data2 = dev->data_in[ANALOG_2_OFFSET];
     return 0;
 }
 
-int output_analog_channel( struct k8055_dev* dev ,int channel, long data ) {
+int k8055_output_analog_channel( struct k8055_dev* dev ,int channel, long data ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     if ( channel==1 ) {
@@ -290,75 +290,75 @@ int output_analog_channel( struct k8055_dev* dev ,int channel, long data ) {
     return k8055_write( dev );
 }
 
-int output_all_analog( struct k8055_dev* dev, long data1, long data2 ) {
+int k8055_output_all_analog( struct k8055_dev* dev, long data1, long data2 ) {
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     dev->data_out[2] = ( unsigned char )data1;
     dev->data_out[3] = ( unsigned char )data2;
     return k8055_write( dev );
 }
 
-int clear_all_analog( struct k8055_dev* dev ) {
-    return output_all_analog( dev, 0, 0 );
+int k8055_clear_all_analog( struct k8055_dev* dev ) {
+    return k8055_output_all_analog( dev, 0, 0 );
 }
 
-int clear_analog_channel( struct k8055_dev* dev, int channel ) {
+int k8055_clear_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( channel==1 ) {
-        return output_analog_channel( dev, 1, 0 );
+        return k8055_output_analog_channel( dev, 1, 0 );
     } else {
-        return output_analog_channel( dev, 2, 0 );
+        return k8055_output_analog_channel( dev, 2, 0 );
     }
 }
 
-int set_analog_channel( struct k8055_dev* dev, int channel ) {
+int k8055_set_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( channel == 2 ) {
-        return output_analog_channel( dev, 2, 0xff );
+        return k8055_output_analog_channel( dev, 2, 0xff );
     } else {
-        return output_analog_channel( dev, 1, 0xff );
+        return k8055_output_analog_channel( dev, 1, 0xff );
     }
 }
 
-int set_all_analog( struct k8055_dev* dev ) {
-    return output_all_analog( dev, 0xff, 0xff );
+int k8055_set_all_analog( struct k8055_dev* dev ) {
+    return k8055_output_all_analog( dev, 0xff, 0xff );
 }
 
-int write_all_digital( struct k8055_dev* dev, long data ) {
+int k8055_write_all_digital( struct k8055_dev* dev, long data ) {
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     dev->data_out[1] = ( unsigned char )data;
     return k8055_write( dev );
 }
 
-int clear_digital_channel( struct k8055_dev* dev, int channel ) {
+int k8055_clear_digital_channel( struct k8055_dev* dev, int channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
     data = dev->data_out[1] & ~( 1 << ( channel-1 ) );
-    return write_all_digital( dev, data );
+    return k8055_write_all_digital( dev, data );
 }
 
-int clear_all_digital( struct k8055_dev* dev ) {
-    return write_all_digital( dev, 0x00 );
+int k8055_clear_all_digital( struct k8055_dev* dev ) {
+    return k8055_write_all_digital( dev, 0x00 );
 }
 
-int set_digital_channel( struct k8055_dev* dev, int channel ) {
+int k8055_set_digital_channel( struct k8055_dev* dev, int channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
     data = dev->data_out[1] | ( 1 << ( channel-1 ) );
-    return write_all_digital( dev, data );
+    return k8055_write_all_digital( dev, data );
 }
 
-int set_all_digital( struct k8055_dev* dev ) {
-    return write_all_digital( dev, 0xff );
+int k8055_set_all_digital( struct k8055_dev* dev ) {
+    return k8055_write_all_digital( dev, 0xff );
 }
 
-int read_digital_channel( struct k8055_dev* dev, int channel ) {
+int k8055_read_digital_channel( struct k8055_dev* dev, int channel ) {
     int rval;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
-    if ( ( rval = read_all_digital( dev ) ) == K8055_ERROR ) return K8055_ERROR;
+    if ( ( rval = k8055_read_all_digital( dev ) ) == K8055_ERROR ) return K8055_ERROR;
     return ( ( rval & ( 1 << ( channel-1 ) ) ) > 0 );
 }
 
-long read_all_digital( struct k8055_dev* dev ) {
+long k8055_read_all_digital( struct k8055_dev* dev ) {
     int return_data = 0;
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     return_data = (
@@ -368,7 +368,7 @@ long read_all_digital( struct k8055_dev* dev ) {
     return return_data;
 }
 
-int read_all_values( struct k8055_dev* dev, long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
+int k8055_read_all_values( struct k8055_dev* dev, long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     *data1 = (
                  ( ( dev->data_in[0] >> 4 ) & 0x03 ) | /* Input 1 and 2 */
@@ -381,7 +381,7 @@ int read_all_values( struct k8055_dev* dev, long int* data1, long int* data2, lo
     return 0;
 }
 
-int set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 ) {
+int k8055_set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 ) {
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     dev->data_out[1] = ( unsigned char )digital_data;
     dev->data_out[2] = ( unsigned char )ad_data1;
@@ -389,14 +389,14 @@ int set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int a
     return k8055_write( dev );
 }
 
-int reset_counter( struct k8055_dev* dev, int counter ) {
+int k8055_reset_counter( struct k8055_dev* dev, int counter ) {
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     dev->data_out[0] = 0x02 + ( unsigned char )counter;
     dev->data_out[3+counter] = 0x00;
     return k8055_write( dev );
 }
 
-long read_counter( struct k8055_dev* dev, int counter ) {
+long k8055_read_counter( struct k8055_dev* dev, int counter ) {
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     if ( counter==1 ) {
@@ -406,7 +406,7 @@ long read_counter( struct k8055_dev* dev, int counter ) {
     }
 }
 
-int set_counter_debounce_time( struct k8055_dev* dev, int counter, long debounce_time ) {
+int k8055_set_counter_debounce_time( struct k8055_dev* dev, int counter, long debounce_time ) {
     float value;
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     dev->data_out[0] = ( unsigned char )counter;
@@ -440,13 +440,13 @@ char* Version( void ) {
 }
 /* New function in version 2 of Velleman DLL, should return devices-found bitmask or 0*/
 long SearchDevices( void ) {
-    return search_devices();
+    return k8055_search_devices();
 }
 /* Open device - scan through usb busses looking for the right device, claim it and then open the device */
 int OpenDevice( long board_address ) {
     if( board_address<0 || board_address>=K8055_MAX_DEV ) return K8055_ERROR;
     if( k8055d[board_address].dev_no!=0 ) return board_address;
-    int ret = open_device( &k8055d[board_address], board_address );
+    int ret = k8055_open_device( &k8055d[board_address], board_address );
     if ( ret != K8055_ERROR ) {
         curr_dev = &k8055d[board_address];
         return ret;
@@ -455,7 +455,7 @@ int OpenDevice( long board_address ) {
 }
 /* Close the Current device */
 int CloseDevice() {
-    return close_device( curr_dev );
+    return k8055_close_device( curr_dev );
 }
 /* New function in version 2 of Velleman DLL, should return deviceno if OK */
 long SetCurrentDevice( long deviceno ) {
@@ -465,62 +465,62 @@ long SetCurrentDevice( long deviceno ) {
     return deviceno;
 }
 long ReadAnalogChannel( long channel ) {
-    return read_analog_channel( curr_dev, channel );
+    return k8055_read_analog_channel( curr_dev, channel );
 }
 int ReadAllAnalog( long* data1, long* data2 ) {
-    return read_all_analog( curr_dev, data1, data2 );
+    return k8055_read_all_analog( curr_dev, data1, data2 );
 }
 int OutputAnalogChannel( long channel, long data ) {
-    return output_analog_channel( curr_dev, channel, data );
+    return k8055_output_analog_channel( curr_dev, channel, data );
 }
 int OutputAllAnalog( long data1, long data2 ) {
-    return output_all_analog( curr_dev, data1, data2 );
+    return k8055_output_all_analog( curr_dev, data1, data2 );
 }
 int ClearAllAnalog() {
-    return clear_all_analog( curr_dev );
+    return k8055_clear_all_analog( curr_dev );
 }
 int ClearAnalogChannel( long channel ) {
-    return clear_analog_channel( curr_dev, channel );
+    return k8055_clear_analog_channel( curr_dev, channel );
 }
 int SetAnalogChannel( long channel ) {
-    return set_analog_channel( curr_dev, channel );
+    return k8055_set_analog_channel( curr_dev, channel );
 }
 int SetAllAnalog() {
-    return set_all_analog( curr_dev );
+    return k8055_set_all_analog( curr_dev );
 }
 int WriteAllDigital( long data ) {
-    return write_all_digital( curr_dev, data );
+    return k8055_write_all_digital( curr_dev, data );
 }
 int ClearDigitalChannel( long channel ) {
-    return clear_digital_channel( curr_dev, channel );
+    return k8055_clear_digital_channel( curr_dev, channel );
 }
 int ClearAllDigital() {
-    return clear_all_digital( curr_dev );
+    return k8055_clear_all_digital( curr_dev );
 }
 int SetDigitalChannel( long channel ) {
-    return set_digital_channel( curr_dev, channel );
+    return k8055_set_digital_channel( curr_dev, channel );
 }
 int SetAllDigital() {
-    return set_all_digital( curr_dev );
+    return k8055_set_all_digital( curr_dev );
 }
 int ReadDigitalChannel( long channel ) {
-    return read_digital_channel( curr_dev, channel );
+    return k8055_read_digital_channel( curr_dev, channel );
 }
 long ReadAllDigital() {
-    return read_all_digital( curr_dev );
+    return k8055_read_all_digital( curr_dev );
 }
 int ReadAllValues( long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
-    return read_all_values( curr_dev, data1, data2, data3, data4, data5 );
+    return k8055_read_all_values( curr_dev, data1, data2, data3, data4, data5 );
 }
 int SetAllValues( int DigitalData, int AdData1, int AdData2 ) {
-    return set_all_values( curr_dev, DigitalData, AdData1, AdData2 );
+    return k8055_set_all_values( curr_dev, DigitalData, AdData1, AdData2 );
 }
 int ResetCounter( long counter ) {
-    return reset_counter( curr_dev, counter );
+    return k8055_reset_counter( curr_dev, counter );
 }
 long ReadCounter( long counter ) {
-    return read_counter( curr_dev, counter );
+    return k8055_read_counter( curr_dev, counter );
 }
 int SetCounterDebounceTime( long counter, long debounce_time ) {
-    return set_counter_debounce_time( curr_dev, counter, debounce_time );
+    return k8055_set_counter_debounce_time( curr_dev, counter, debounce_time );
 }
