@@ -53,7 +53,7 @@ class K8055 {
 
         int SetAnalogChannel( int channel );
         int ClearAnalogChannel( int channel );
-        int ReadAnalogChannel( int channel_no );
+        int ReadAnalogChannel( int channel );
         int WriteAnalogChannel( int channel, int data );
 
         int SetAllAnalog();
@@ -73,10 +73,10 @@ class K8055 {
         int SetAllValues( int digital_data, int ad_data1, int ad_data2 );
         int ReadAllValues ( int*  data1, int* data2, int* data3, int* data4, int* data5 );
 
-        int ResetCounter( int counter_n );
-        int ReadCounter( int counter_n );
+        int ResetCounter( int counter );
+        int ReadCounter( int counter );
 
-        int SetCounterDebounceTime( int counter_n, int debounce_time );
+        int SetCounterDebounceTime( int counter, int debounce_time );
 
     private:
         struct k8055_dev dev;

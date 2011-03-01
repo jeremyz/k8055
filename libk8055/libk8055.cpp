@@ -99,8 +99,8 @@ int K8055::ClearAnalogChannel( int channel ) {
     return k8055_clear_analog_channel( &dev, channel );
 }
 
-int K8055::ReadAnalogChannel( int channel_no ) {
-    return k8055_read_analog_channel( &dev, channel_no );
+int K8055::ReadAnalogChannel( int channel ) {
+    return k8055_read_analog_channel( &dev, channel );
 }
 
 int K8055::WriteAnalogChannel( int channel, int data ) {
@@ -158,15 +158,15 @@ int K8055::ReadAllValues ( int*  data1, int* data2, int* data3, int* data4, int*
     return k8055_read_all_values( &dev, data1, data2, data3, data4, data5 );
 }
 
-int K8055::ResetCounter( int counter_n ) {
-    return k8055_reset_counter( &dev, counter_n );
+int K8055::ResetCounter( int counter ) {
+    return k8055_reset_counter( &dev, counter );
 }
 
-int K8055::ReadCounter( int counter_n ) {
-    return k8055_read_counter( &dev, counter_n );
+int K8055::ReadCounter( int counter ) {
+    return k8055_read_counter( &dev, counter );
 }
 
-int K8055::SetCounterDebounceTime( int counter_n, int debounce_time ) {
-    return k8055_set_counter_debounce_time( &dev, counter_n, debounce_time );
+int K8055::SetCounterDebounceTime( int counter, int debounce_time ) {
+    return k8055_set_counter_debounce_time( &dev, counter, debounce_time );
 }
 
