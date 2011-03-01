@@ -195,7 +195,7 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
                 } else {
                     memset( dev->data_out,0,PACKET_LEN );
                     dev->dev_no = board_address + 1;
-                    dev->data_out[0] = CMD_RESET;
+                    dev->data_out[CMD_OFFSET] = CMD_RESET;
                     k8055_write( dev );
                     if ( k8055_read( dev )==0 ) {
                         if( debug ) fprintf( stderr, "Device %d ready\n", board_address );
@@ -275,7 +275,7 @@ int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 ) {
 
 int k8055_write_analog_channel( struct k8055_dev* dev ,int channel, int data ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
-    dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
+    dev->data_out[CMD_OFFSET] = CMD_SET_ANALOG_DIGITAL;
     if ( channel==1 ) {
         dev->data_out[ANALOG_1_OFFSET] = ( unsigned char )data;
     } else {
@@ -285,9 +285,9 @@ int k8055_write_analog_channel( struct k8055_dev* dev ,int channel, int data ) {
 }
 
 int k8055_write_all_analog( struct k8055_dev* dev, int data1, int data2 ) {
-    dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
-    dev->data_out[2] = ( unsigned char )data1;
-    dev->data_out[3] = ( unsigned char )data2;
+    dev->data_out[CMD_OFFSET] = CMD_SET_ANALOG_DIGITAL;
+    dev->data_out[ANALOG_1_OFFSET] = ( unsigned char )data1;
+    dev->data_out[ANALOG_2_OFFSET] = ( unsigned char )data2;
     return k8055_write( dev );
 }
 
@@ -318,15 +318,15 @@ int k8055_set_all_analog( struct k8055_dev* dev ) {
 }
 
 int k8055_write_all_digital( struct k8055_dev* dev, int data ) {
-    dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
-    dev->data_out[1] = ( unsigned char )data;
+    dev->data_out[CMD_OFFSET] = CMD_SET_ANALOG_DIGITAL;
+    dev->data_out[DIGITAL_OUT_OFFSET] = ( unsigned char )data;
     return k8055_write( dev );
 }
 
 int k8055_clear_digital_channel( struct k8055_dev* dev, int channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
-    data = dev->data_out[1] & ~( 1 << ( channel-1 ) );
+    data = dev->data_out[DIGITAL_OUT_OFFSET] & ~( 1 << ( channel-1 ) );
     return k8055_write_all_digital( dev, data );
 }
 
@@ -337,7 +337,7 @@ int k8055_clear_all_digital( struct k8055_dev* dev ) {
 int k8055_set_digital_channel( struct k8055_dev* dev, int channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
-    data = dev->data_out[1] | ( 1 << ( channel-1 ) );
+    data = dev->data_out[DIGITAL_OUT_OFFSET] | ( 1 << ( channel-1 ) );
     return k8055_write_all_digital( dev, data );
 }
 
@@ -356,18 +356,18 @@ int k8055_read_all_digital( struct k8055_dev* dev ) {
     int return_data = 0;
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     return_data = (
-                      ( ( dev->data_in[0] >> 4 ) & 0x03 ) | /* Input 1 and 2 */
-                      ( ( dev->data_in[0] << 2 ) & 0x04 ) | /* Input 3 */
-                      ( ( dev->data_in[0] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
+                      ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x03 ) | /* Input 1 and 2 */
+                      ( ( dev->data_in[DIGITAL_INP_OFFSET] << 2 ) & 0x04 ) | /* Input 3 */
+                      ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 3 ) & 0x18 ) );/* Input 4 and 5 */
     return return_data;
 }
 
 int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     *data1 = (
-                 ( ( dev->data_in[0] >> 4 ) & 0x03 ) | /* Input 1 and 2 */
-                 ( ( dev->data_in[0] << 2 ) & 0x04 ) | /* Input 3 */
-                 ( ( dev->data_in[0] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
+                 ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x03 ) |  /* Input 1 and 2 */
+                 ( ( dev->data_in[DIGITAL_INP_OFFSET] << 2 ) & 0x04 ) |  /* Input 3 */
+                 ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
     *data2 = dev->data_in[ANALOG_1_OFFSET];
     *data3 = dev->data_in[ANALOG_2_OFFSET];
     *data4 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
@@ -376,10 +376,10 @@ int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* d
 }
 
 int k8055_set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 ) {
-    dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
-    dev->data_out[1] = ( unsigned char )digital_data;
-    dev->data_out[2] = ( unsigned char )ad_data1;
-    dev->data_out[3] = ( unsigned char )ad_data2;
+    dev->data_out[CMD_OFFSET] = CMD_SET_ANALOG_DIGITAL;
+    dev->data_out[DIGITAL_OUT_OFFSET] = ( unsigned char )digital_data;
+    dev->data_out[ANALOG_1_OFFSET] = ( unsigned char )ad_data1;
+    dev->data_out[ANALOG_2_OFFSET] = ( unsigned char )ad_data2;
     return k8055_write( dev );
 }
 
