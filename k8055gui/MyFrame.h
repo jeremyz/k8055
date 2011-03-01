@@ -23,6 +23,7 @@
 
 #include <wx/wx.h>
 #include <wx/tglbtn.h>
+#include "k8055++.h"
 
 enum
 {
@@ -67,6 +68,7 @@ class MyFrame: public wxFrame
 protected:    
     long address; // board address 0 -> 3
     bool connected;// true if connected 
+    K8055 k8055;
 public:
 
     //constructor

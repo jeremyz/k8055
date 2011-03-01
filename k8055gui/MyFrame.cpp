@@ -19,7 +19,6 @@
 */
 
 #include "MyFrame.h"
-#include "k8055.h"
 #include <iostream>
 
 using namespace std;
@@ -148,7 +147,7 @@ void MyFrame::OnBnClickedSK6(wxCommandEvent& WXUNUSED(event))
 void MyFrame::OnBnClickedConnect(wxCommandEvent& WXUNUSED(event))
 {
      address=3-SK5->GetValue()-2*SK6->GetValue();
-     if (OpenDevice(address)==-1)
+     if (k8055.OpenDevice(address)==-1)
      {
         connected=0;
         ConnectionStatus->Clear();
@@ -213,16 +212,13 @@ void MyFrame::OnBnClickedClearallanalog(wxCommandEvent& WXUNUSED(event))
 void MyFrame::OnBnClickedOutputtest(wxCommandEvent& WXUNUSED(event))
 {
     if (DEBUG) cout<<"OutputTest clicked!"<<endl;
-    cout<<"Not yet implemented!"<<endl;
-//    O1->SetValue(1);
-//    O2->SetValue(0);
-//    O3->SetValue(0);
-//    O4->SetValue(0);
-//    O5->SetValue(0);
-//    O6->SetValue(0);
-//    O7->SetValue(0);
-//    O8->SetValue(0);
-//    WriteDigital();
+    k8055.ClearAllDigital();
+    k8055.ClearAllAnalog();
+    k8055.SetAnalogChannel( 1 );
+    for( int i=0, j=255; i<256; i++, j--) k8055.SetAllValues(i,i,j);
+    k8055.ClearAllDigital();
+    k8055.ClearAllAnalog();
+    OutputTest->SetValue(false);
 }
 
 void MyFrame::OnNMCustomdrawDa1(wxScrollEvent& WXUNUSED(event))
@@ -313,7 +309,7 @@ void MyFrame::OnBnClickedResct1(wxCommandEvent& WXUNUSED(event))
      if (DEBUG) cout<<"Resct1 clicked!"<<endl;
      if (connected)
      {      
-       ResetCounter(1);
+       k8055.ResetCounter(1);
      }
 }
 
@@ -328,7 +324,7 @@ void MyFrame::OnBnClickedResct2(wxCommandEvent& WXUNUSED(event))
      if (DEBUG) cout<<"Resct2 clicked!"<<endl;
      if (connected)
      {      
-       ResetCounter(2);
+       k8055.ResetCounter(2);
      }
 }
 
@@ -348,8 +344,8 @@ void MyFrame::OnIdle(wxIdleEvent& event)
      if (connected)
      { 
        //read data
-       long int data1, data2, data3, data4, data5;
-       ReadAllValues(&data1, &data2, &data3, &data4, &data5);
+       int data1, data2, data3, data4, data5;
+       k8055.ReadAllValues(&data1, &data2, &data3, &data4, &data5);
 
        //print data on interface
        I1->SetValue(data1 & 0x01);
@@ -384,7 +380,7 @@ void MyFrame::WriteDigital()
      {
         long word=O1->GetValue()+2*O2->GetValue()+4*O3->GetValue()+8*O4->GetValue()+
         16*O5->GetValue()+32*O6->GetValue()+64*O7->GetValue()+128*O8->GetValue(); 
-        WriteAllDigital(word);
+        k8055.WriteAllDigital(word);
      }
 }
 
@@ -395,7 +391,7 @@ void MyFrame::WriteAnalog()
      {      
         //OutputAnalogChannel(1, (long) AnalgOutput1->GetValue());
         //OutputAnalogChannel(2, (long) AnalgOutput2->GetValue()); 
-        OutputAllAnalog((long) AnalgOutput1->GetValue(), (long) AnalgOutput2->GetValue());
+        k8055.WriteAllAnalog( AnalgOutput1->GetValue(), AnalgOutput2->GetValue());
      }
 }
 
@@ -413,7 +409,7 @@ void MyFrame::WriteDebounce1()
            case 2 : DebounceTime=10; break;
            case 3 : DebounceTime=1000;
        }
-       SetCounterDebounceTime(1, DebounceTime);      
+       k8055.SetCounterDebounceTime(1, DebounceTime);
      } 
 }
 
@@ -431,7 +427,7 @@ void MyFrame::WriteDebounce2()
            case 2 : DebounceTime=10; break;
            case 3 : DebounceTime=1000;
        }
-       SetCounterDebounceTime(2, DebounceTime);      
+       k8055.SetCounterDebounceTime(2, DebounceTime);
      } 
 }
 
@@ -442,8 +438,8 @@ void MyFrame::WriteAll()
      {
        long word=O1->GetValue()+2*O2->GetValue()+4*O3->GetValue()+8*O4->GetValue()+
        16*O5->GetValue()+32*O6->GetValue()+64*O7->GetValue()+128*O8->GetValue(); 
-       WriteAllDigital(word);
-       OutputAllAnalog((long) AnalgOutput1->GetValue(), (long) AnalgOutput2->GetValue());
+       k8055.WriteAllDigital(word);
+       k8055.WriteAllAnalog((long) AnalgOutput1->GetValue(), (long) AnalgOutput2->GetValue());
        WriteDebounce1();
        WriteDebounce2();
      }
