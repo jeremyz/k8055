@@ -33,8 +33,10 @@ extern "C" {
     };
 
     char* version( void );
+    void set_debug_on( void );
+    void set_debug_off( void );
     long search_devices( void );
-    int open_device( struct k8055_dev* dev, long board_address );
+    int open_device( struct k8055_dev* dev, int board_address );
     int close_device( struct k8055_dev* dev );
     long read_analog_channel( struct k8055_dev* dev, long channel );
     int read_all_analog( struct k8055_dev* dev, long* data1, long* data2 );

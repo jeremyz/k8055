@@ -115,7 +115,7 @@
 #define CMD_SET_ANALOG_DIGITAL 0x05
 
 /* set debug to 0 to not print excess info */
-int debug = 0;
+static int debug = 0;
 
 static struct k8055_dev k8055d[K8055_MAX_DEV];
 static struct k8055_dev* curr_dev;
@@ -125,10 +125,7 @@ static int k8055_read( struct k8055_dev* dev ) {
     if( dev->dev_no==0 ) return K8055_ERROR;
     for( int i=0; i<READ_RETRY; i++ ) {
         int read_status = usb_interrupt_read( dev->device_handle, USB_INP_EP, ( char* )dev->data_in, PACKET_LEN, USB_TIMEOUT );
-        if( ( read_status==PACKET_LEN ) && ( dev->data_in[1]==dev->dev_no ) ) {
-            if( debug ) fprintf( stderr,"read dev %d data : %X\n",dev->data_in[1],dev->data_in );
-            return 0;
-        }
+        if( ( read_status==PACKET_LEN ) && ( dev->data_in[1]==dev->dev_no ) ) return 0;
         if( debug ) fprintf( stderr, "k8055 read retry\n" );
     }
     return K8055_ERROR;
@@ -172,15 +169,23 @@ static int takeover_device( usb_dev_handle* udev, int interface ) {
     return 0;
 }
 
+void set_debug_on( void ) {
+    debug = 1;
+}
+
+void set_debug_off( void ) {
+    debug = 0;
+}
+
 char* version( void ) {
     return( VERSION );
 }
 
-int open_device( struct k8055_dev* dev, long board_address ) {
+int open_device( struct k8055_dev* dev, int board_address ) {
     usb_init();
     usb_find_busses();
     usb_find_devices();
-    int ipid = K8055_IPID + ( int )board_address;
+    int ipid = K8055_IPID + board_address;
     struct usb_bus* busses = usb_get_busses();
     for( struct usb_bus* bus=busses; bus; bus=bus->next ) {
         for( struct usb_device* usb_dev=bus->devices; usb_dev; usb_dev=usb_dev->next ) {
@@ -203,10 +208,10 @@ int open_device( struct k8055_dev* dev, long board_address ) {
                     dev->data_out[0] = CMD_RESET;
                     k8055_write( dev );
                     if ( k8055_read( dev )==0 ) {
-                        if( debug ) fprintf( stderr, "Device %d ready\n",board_address );
+                        if( debug ) fprintf( stderr, "Device %d ready\n", board_address );
                         return board_address;
                     } else {
-                        if( debug ) fprintf( stderr, "Device %d not ready\n",board_address );
+                        if( debug ) fprintf( stderr, "Device %d not ready\n", board_address );
                         dev->dev_no = 0;
                         usb_close( dev->device_handle );
                         dev->device_handle = NULL;
@@ -216,7 +221,7 @@ int open_device( struct k8055_dev* dev, long board_address ) {
             }
         }
     }
-    if( debug ) fprintf( stderr, "Could not find Velleman k8055 with address %d\n",( int )board_address );
+    if( debug ) fprintf( stderr, "Could not find Velleman k8055 with address %d\n", board_address );
     return K8055_ERROR;
 }
 

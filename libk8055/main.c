@@ -43,7 +43,7 @@
 #define false 0
 #define true 1
 
-extern int debug;
+int debug = 0;
 
 int ia1 = -1;
 int ia2 = -1;
@@ -144,7 +144,8 @@ int read_param(int argc,char *params[])
 		    	!Convert_StringToInt(params[i]+6,&dbt2) ) erreurParam = true;
 		else
 			if ( !strcmp(params[i],"-debug") ){
-			   debug = true;
+                debug = 1;
+			    set_debug_on();
 			}
 		else
 			if ( !strcmp(params[i],"-reset1") ) resetcnt1 = true;
