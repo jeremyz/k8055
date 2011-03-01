@@ -347,7 +347,7 @@ int k8055_set_all_digital( struct k8055_dev* dev ) {
 
 int k8055_read_digital_channel( struct k8055_dev* dev, int channel ) {
     int rval;
-    if ( channel<1 || channel>8 ) return K8055_ERROR;
+    if ( channel<1 || channel>5 ) return K8055_ERROR;
     if ( ( rval = k8055_read_all_digital( dev ) ) == K8055_ERROR ) return K8055_ERROR;
     return ( ( rval & ( 1 << ( channel-1 ) ) ) > 0 );
 }
