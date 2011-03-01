@@ -260,7 +260,7 @@ long search_devices( void ) {
     return ret;
 }
 
-long read_analog_channel( struct k8055_dev* dev, long channel ) {
+long read_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( k8055_read( dev )==0 ) {
         if ( channel==1 ) {
@@ -279,7 +279,7 @@ int read_all_analog( struct k8055_dev* dev, long* data1, long* data2 ) {
     return 0;
 }
 
-int output_analog_channel( struct k8055_dev* dev ,long channel, long data ) {
+int output_analog_channel( struct k8055_dev* dev ,int channel, long data ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     if ( channel==1 ) {
@@ -301,7 +301,7 @@ int clear_all_analog( struct k8055_dev* dev ) {
     return output_all_analog( dev, 0, 0 );
 }
 
-int clear_analog_channel( struct k8055_dev* dev, long channel ) {
+int clear_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( channel==1 ) {
         return output_analog_channel( dev, 1, 0 );
@@ -310,7 +310,7 @@ int clear_analog_channel( struct k8055_dev* dev, long channel ) {
     }
 }
 
-int set_analog_channel( struct k8055_dev* dev, long channel ) {
+int set_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( channel == 2 ) {
         return output_analog_channel( dev, 2, 0xff );
@@ -329,7 +329,7 @@ int write_all_digital( struct k8055_dev* dev, long data ) {
     return k8055_write( dev );
 }
 
-int clear_digital_channel( struct k8055_dev* dev, long channel ) {
+int clear_digital_channel( struct k8055_dev* dev, int channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
     data = dev->data_out[1] & ~( 1 << ( channel-1 ) );
@@ -340,7 +340,7 @@ int clear_all_digital( struct k8055_dev* dev ) {
     return write_all_digital( dev, 0x00 );
 }
 
-int set_digital_channel( struct k8055_dev* dev, long channel ) {
+int set_digital_channel( struct k8055_dev* dev, int channel ) {
     unsigned char data;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
     data = dev->data_out[1] | ( 1 << ( channel-1 ) );
@@ -351,7 +351,7 @@ int set_all_digital( struct k8055_dev* dev ) {
     return write_all_digital( dev, 0xff );
 }
 
-int read_digital_channel( struct k8055_dev* dev, long channel ) {
+int read_digital_channel( struct k8055_dev* dev, int channel ) {
     int rval;
     if ( channel<1 || channel>8 ) return K8055_ERROR;
     if ( ( rval = read_all_digital( dev ) ) == K8055_ERROR ) return K8055_ERROR;
@@ -389,14 +389,14 @@ int set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int a
     return k8055_write( dev );
 }
 
-int reset_counter( struct k8055_dev* dev, long counter ) {
+int reset_counter( struct k8055_dev* dev, int counter ) {
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     dev->data_out[0] = 0x02 + ( unsigned char )counter;
     dev->data_out[3+counter] = 0x00;
     return k8055_write( dev );
 }
 
-long read_counter( struct k8055_dev* dev, long counter ) {
+long read_counter( struct k8055_dev* dev, int counter ) {
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     if ( counter==1 ) {
@@ -406,7 +406,7 @@ long read_counter( struct k8055_dev* dev, long counter ) {
     }
 }
 
-int set_counter_debounce_time( struct k8055_dev* dev, long counter, long debounce_time ) {
+int set_counter_debounce_time( struct k8055_dev* dev, int counter, long debounce_time ) {
     float value;
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     dev->data_out[0] = ( unsigned char )counter;
