@@ -99,13 +99,7 @@
 #define USB_TIMEOUT 20
 #define K8055_ERROR -1
 
-#define DIGITAL_INP_OFFSET 0
-#define DIGITAL_OUT_OFFSET 1
-#define ANALOG_1_OFFSET 2
-#define ANALOG_2_OFFSET 3
-#define COUNTER_1_OFFSET 4
-#define COUNTER_2_OFFSET 6
-
+#define CMD_OFFSET 0
 #define CMD_RESET 0x00
 #define CMD_SET_DEBOUNCE_1 0x01
 #define CMD_SET_DEBOUNCE_2 0x01
@@ -117,7 +111,7 @@
 static int debug = 0;
 
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
-static int k8055_read( struct k8055_dev* dev ) {
+int k8055_read( struct k8055_dev* dev ) {
     if( dev->dev_no==0 ) return K8055_ERROR;
     for( int i=0; i<READ_RETRY; i++ ) {
         int read_status = usb_interrupt_read( dev->device_handle, USB_INP_EP, ( char* )dev->data_in, PACKET_LEN, USB_TIMEOUT );
@@ -128,7 +122,7 @@ static int k8055_read( struct k8055_dev* dev ) {
 }
 
 /* Actual write of data to the device endpont, retry WRITE_RETRY times if not reponding correctly */
-static int k8055_write( struct k8055_dev* dev ) {
+int k8055_write( struct k8055_dev* dev ) {
     if( dev->dev_no == 0 ) return K8055_ERROR;
     for( int i=0; i<WRITE_RETRY; i++ ) {
         int write_status = usb_interrupt_write( dev->device_handle, USB_OUT_EP, ( char* )dev->data_out, PACKET_LEN, USB_TIMEOUT );

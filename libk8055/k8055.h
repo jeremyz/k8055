@@ -25,12 +25,31 @@ extern "C" {
 
 #define PACKET_LEN 8
 
+#define DIGITAL_INP_OFFSET 0
+#define DIGITAL_OUT_OFFSET 1
+#define ANALOG_1_OFFSET 2
+#define ANALOG_2_OFFSET 3
+#define COUNTER_1_OFFSET 4
+#define COUNTER_2_OFFSET 6
+
     struct k8055_dev {
         int dev_no;
         struct usb_dev_handle* device_handle;
         unsigned char data_in[PACKET_LEN+1];
         unsigned char data_out[PACKET_LEN+1];
     };
+    int k8055_read( struct k8055_dev* dev );
+    int k8055_write( struct k8055_dev* dev );
+
+    int k8055_digital_1( struct k8055_dev* dev ) { return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x01 ); }
+    int k8055_digital_2( struct k8055_dev* dev ) { return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 5 ) & 0x01 ); }
+    int k8055_digital_3( struct k8055_dev* dev ) { return ( ( dev->data_in[DIGITAL_INP_OFFSET] ) & 0x01 ); }
+    int k8055_digital_4( struct k8055_dev* dev ) { return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 6 ) & 0x01 ); }
+    int k8055_digital_5( struct k8055_dev* dev ) { return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 7 ) & 0x01 ); }
+    int k8055_analog_1( struct k8055_dev* dev ) { return dev->data_in[ANALOG_1_OFFSET]; }
+    int k8055_analog_2( struct k8055_dev* dev ) { return dev->data_in[ANALOG_2_OFFSET]; }
+    int k8055_counter_1( struct k8055_dev* dev ) { return dev->data_in[COUNTER_1_OFFSET]; }
+    int k8055_counter_2( struct k8055_dev* dev ) { return dev->data_in[COUNTER_2_OFFSET]; }
 
     char* k8055_version( void );
     void k8055_set_debug_on( void );
