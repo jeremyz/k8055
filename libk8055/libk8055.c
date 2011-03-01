@@ -239,7 +239,7 @@ int k8055_close_device( struct k8055_dev* dev ) {
     return rc;
 }
 
-long k8055_search_devices( void ) {
+int k8055_search_devices( void ) {
     int ret = 0;
     usb_init();
     usb_find_busses();
@@ -260,7 +260,7 @@ long k8055_search_devices( void ) {
     return ret;
 }
 
-long k8055_read_analog_channel( struct k8055_dev* dev, int channel ) {
+int k8055_read_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( k8055_read( dev )==0 ) {
         if ( channel==1 ) {
@@ -279,7 +279,7 @@ int k8055_read_all_analog( struct k8055_dev* dev, long* data1, long* data2 ) {
     return 0;
 }
 
-int k8055_output_analog_channel( struct k8055_dev* dev ,int channel, long data ) {
+int k8055_write_analog_channel( struct k8055_dev* dev ,int channel, int data ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     if ( channel==1 ) {
@@ -290,7 +290,7 @@ int k8055_output_analog_channel( struct k8055_dev* dev ,int channel, long data )
     return k8055_write( dev );
 }
 
-int k8055_output_all_analog( struct k8055_dev* dev, long data1, long data2 ) {
+int k8055_write_all_analog( struct k8055_dev* dev, int data1, int data2 ) {
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     dev->data_out[2] = ( unsigned char )data1;
     dev->data_out[3] = ( unsigned char )data2;
@@ -298,32 +298,32 @@ int k8055_output_all_analog( struct k8055_dev* dev, long data1, long data2 ) {
 }
 
 int k8055_clear_all_analog( struct k8055_dev* dev ) {
-    return k8055_output_all_analog( dev, 0, 0 );
+    return k8055_write_all_analog( dev, 0, 0 );
 }
 
 int k8055_clear_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( channel==1 ) {
-        return k8055_output_analog_channel( dev, 1, 0 );
+        return k8055_write_analog_channel( dev, 1, 0 );
     } else {
-        return k8055_output_analog_channel( dev, 2, 0 );
+        return k8055_write_analog_channel( dev, 2, 0 );
     }
 }
 
 int k8055_set_analog_channel( struct k8055_dev* dev, int channel ) {
     if ( !( channel==1 || channel==2 ) ) return K8055_ERROR;
     if ( channel == 2 ) {
-        return k8055_output_analog_channel( dev, 2, 0xff );
+        return k8055_write_analog_channel( dev, 2, 0xff );
     } else {
-        return k8055_output_analog_channel( dev, 1, 0xff );
+        return k8055_write_analog_channel( dev, 1, 0xff );
     }
 }
 
 int k8055_set_all_analog( struct k8055_dev* dev ) {
-    return k8055_output_all_analog( dev, 0xff, 0xff );
+    return k8055_write_all_analog( dev, 0xff, 0xff );
 }
 
-int k8055_write_all_digital( struct k8055_dev* dev, long data ) {
+int k8055_write_all_digital( struct k8055_dev* dev, int data ) {
     dev->data_out[0] = CMD_SET_ANALOG_DIGITAL;
     dev->data_out[1] = ( unsigned char )data;
     return k8055_write( dev );
@@ -358,7 +358,7 @@ int k8055_read_digital_channel( struct k8055_dev* dev, int channel ) {
     return ( ( rval & ( 1 << ( channel-1 ) ) ) > 0 );
 }
 
-long k8055_read_all_digital( struct k8055_dev* dev ) {
+int k8055_read_all_digital( struct k8055_dev* dev ) {
     int return_data = 0;
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     return_data = (
@@ -396,7 +396,7 @@ int k8055_reset_counter( struct k8055_dev* dev, int counter ) {
     return k8055_write( dev );
 }
 
-long k8055_read_counter( struct k8055_dev* dev, int counter ) {
+int k8055_read_counter( struct k8055_dev* dev, int counter ) {
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
     if ( counter==1 ) {
@@ -406,7 +406,7 @@ long k8055_read_counter( struct k8055_dev* dev, int counter ) {
     }
 }
 
-int k8055_set_counter_debounce_time( struct k8055_dev* dev, int counter, long debounce_time ) {
+int k8055_set_counter_debounce_time( struct k8055_dev* dev, int counter, int debounce_time ) {
     float value;
     if ( !( counter==1 || counter==2 ) ) return K8055_ERROR;
     dev->data_out[0] = ( unsigned char )counter;
@@ -471,10 +471,10 @@ int ReadAllAnalog( long* data1, long* data2 ) {
     return k8055_read_all_analog( curr_dev, data1, data2 );
 }
 int OutputAnalogChannel( long channel, long data ) {
-    return k8055_output_analog_channel( curr_dev, channel, data );
+    return k8055_write_analog_channel( curr_dev, channel, data );
 }
 int OutputAllAnalog( long data1, long data2 ) {
-    return k8055_output_all_analog( curr_dev, data1, data2 );
+    return k8055_write_all_analog( curr_dev, data1, data2 );
 }
 int ClearAllAnalog() {
     return k8055_clear_all_analog( curr_dev );
