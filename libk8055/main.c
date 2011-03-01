@@ -142,9 +142,9 @@ inline unsigned long int time_msec ( void ) {
 
 int main ( int argc,char* params[] ) {
     int i,result;
-    long d=0;
-    long a1=0,a2=0;
-    long c1=0, c2=0;
+    int d=0;
+    int a1=0,a2=0;
+    int c1=0, c2=0;
     unsigned long int start,mstart=0,lastcall=0;
     start = time_msec();
     if ( read_param( argc,params ) ) {
@@ -181,15 +181,15 @@ int main ( int argc,char* params[] ) {
                 if ( debug ) printf( "SetAllValues=%d - analog1:%d, analog2:%d\n",result,ia1,ia2 );
             } else {
                 if ( ia1!=-1 ) {
-                    result=k8055_output_analog_channel( &dev,1,ia1 );
+                    result=k8055_write_analog_channel( &dev,1,ia1 );
                     if ( debug ) printf( "Set analog1:%d=>%d\n",ia1,result );
                 }
                 if ( ia2!=-1 ) {
-                    result=k8055_output_analog_channel( &dev,2,ia2 );
+                    result=k8055_write_analog_channel( &dev,2,ia2 );
                     if ( debug ) printf( "Set analog2:%d=>%d\n",ia2,result );
                 }
                 if ( id8!=-1 ) {
-                    result=k8055_write_all_digital( &dev,( long )id8 );
+                    result=k8055_write_all_digital( &dev,id8 );
                     if ( debug ) printf( "Set digital:%d=>%d\n",id8,result );
                 }
             }
@@ -200,7 +200,7 @@ int main ( int argc,char* params[] ) {
                 }
                 k8055_read_all_values( &dev,&d,&a1,&a2,&c1,&c2 );
                 lastcall = time_msec();
-                printf( "%d;%d;%d;%d;%d;%d\n", ( int )( lastcall-start ),( int )d, ( int )a1, ( int )a2,( int )c1,( int )c2 );
+                printf( "%d;%d;%d;%d;%d;%d\n", ( int )( lastcall-start ), d, a1, a2, c1, c2 );
             }
             k8055_close_device( &dev );
         }
