@@ -92,7 +92,6 @@
 
 #define K8055_IPID 0x5500
 #define VELLEMAN_VENDOR_ID 0x10cf
-#define K8055_MAX_DEV 4
 
 #define USB_OUT_EP 0x01	/* USB output endpoint */
 #define USB_INP_EP 0x81 /* USB Input endpoint */
@@ -116,9 +115,6 @@
 
 /* set debug to 0 to not print excess info */
 static int debug = 0;
-
-static struct k8055_dev k8055d[K8055_MAX_DEV];
-static struct k8055_dev* curr_dev;
 
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
 static int k8055_read( struct k8055_dev* dev ) {
@@ -434,6 +430,11 @@ int set_counter_debounce_time( struct k8055_dev* dev, long counter, long debounc
 }
 
 /** Velleman API ***************************************************************************************************************************/
+
+#define K8055_MAX_DEV 4
+static struct k8055_dev k8055d[K8055_MAX_DEV];
+static struct k8055_dev* curr_dev;
+
 char* Version( void ) {
     return( VERSION );
 }
