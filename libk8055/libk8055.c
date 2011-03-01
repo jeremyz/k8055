@@ -132,6 +132,42 @@ int k8055_write( struct k8055_dev* dev ) {
     return K8055_ERROR;
 }
 
+int k8055_digital_1( struct k8055_dev* dev ) {
+    return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x01 );
+}
+
+int k8055_digital_2( struct k8055_dev* dev ) {
+    return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 5 ) & 0x01 );
+}
+
+int k8055_digital_3( struct k8055_dev* dev ) {
+    return ( ( dev->data_in[DIGITAL_INP_OFFSET] ) & 0x01 );
+}
+
+int k8055_digital_4( struct k8055_dev* dev ) {
+    return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 6 ) & 0x01 );
+}
+
+int k8055_digital_5( struct k8055_dev* dev ) {
+    return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 7 ) & 0x01 );
+}
+
+int k8055_analog_1( struct k8055_dev* dev ) {
+    return dev->data_in[ANALOG_1_OFFSET];
+}
+
+int k8055_analog_2( struct k8055_dev* dev ) {
+    return dev->data_in[ANALOG_2_OFFSET];
+}
+
+int k8055_counter_1( struct k8055_dev* dev ) {
+    return dev->data_in[COUNTER_1_OFFSET];
+}
+
+int k8055_counter_2( struct k8055_dev* dev ) {
+    return dev->data_in[COUNTER_2_OFFSET];
+}
+
 /* If device is owned by some kernel driver, try to disconnect it and claim the device*/
 static int k8055_takeover_device( usb_dev_handle* udev, int interface ) {
     char driver_name[STR_BUFF];

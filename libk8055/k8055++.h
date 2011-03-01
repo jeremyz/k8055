@@ -22,6 +22,9 @@
  *
  */
 
+#ifndef K8055_CPP_H
+#define K8055_CPP_H 1
+
 #include "k8055.h"
 
 class K8055 {
@@ -79,3 +82,4 @@ class K8055 {
         struct k8055_dev dev;
 };
 
+#endif // K8055_CPP_H
