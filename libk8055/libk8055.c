@@ -81,9 +81,9 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <usb.h>
 #include <assert.h>
 #include <math.h>
+#include <libusb.h>
 #include "k8055.h"
 
 #define STR_BUFF 256
@@ -113,9 +113,9 @@ static int debug = 0;
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
 int k8055_read( struct k8055_dev* dev ) {
     if( dev->dev_no==0 ) return K8055_ERROR;
+    int length;
     for( int i=0; i<READ_RETRY; i++ ) {
-        int read_status = usb_interrupt_read( dev->device_handle, USB_INP_EP, ( char* )dev->data_in, PACKET_LEN, USB_TIMEOUT );
-        if( ( read_status==PACKET_LEN ) && ( dev->data_in[1]==dev->dev_no ) ) return 0;
+        if( libusb_interrupt_transfer( dev->usb_handle, USB_INP_EP, dev->data_in, PACKET_LEN, &length, USB_TIMEOUT )==0 && ( length==PACKET_LEN ) && ( dev->data_in[1]==dev->dev_no ) ) return 0;
         if( debug ) fprintf( stderr, "k8055 read retry\n" );
     }
     return K8055_ERROR;
@@ -124,9 +124,9 @@ int k8055_read( struct k8055_dev* dev ) {
 /* Actual write of data to the device endpont, retry WRITE_RETRY times if not reponding correctly */
 int k8055_write( struct k8055_dev* dev ) {
     if( dev->dev_no == 0 ) return K8055_ERROR;
+    int length;
     for( int i=0; i<WRITE_RETRY; i++ ) {
-        int write_status = usb_interrupt_write( dev->device_handle, USB_OUT_EP, ( char* )dev->data_out, PACKET_LEN, USB_TIMEOUT );
-        if( write_status==PACKET_LEN ) return 0;
+        if( libusb_interrupt_transfer( dev->usb_handle, USB_OUT_EP, dev->data_out, PACKET_LEN, &length, USB_TIMEOUT )==0 && length==PACKET_LEN ) return 0;
         if( debug ) fprintf( stderr, "k8055 write retry\n" );
     }
     return K8055_ERROR;
@@ -169,28 +169,19 @@ int k8055_counter_2( struct k8055_dev* dev ) {
 }
 
 /* If device is owned by some kernel driver, try to disconnect it and claim the device*/
-static int k8055_takeover_device( usb_dev_handle* udev, int interface ) {
+static int k8055_takeover_device( libusb_device_handle* handle, int interface ) {
     char driver_name[STR_BUFF];
     memset( driver_name, 0, STR_BUFF );
     int ret = K8055_ERROR;
-    assert( udev != NULL );
-    if( usb_get_driver_np( udev, interface, driver_name, sizeof( driver_name ) )==0 ) {
-        if( debug ) fprintf( stderr, "usb_get_driver_np success: %s\n", driver_name );
-        if( usb_detach_kernel_driver_np( udev, interface )==0 ) {
-            if( debug ) fprintf( stderr, "usb_detach_kernel_driver_np success" );
-        } else {
-            if( debug ) fprintf( stderr, "usb_detach_kernel_driver_np failure : %s\n", usb_strerror() );
-        }
-    } else {
-        if( debug ) fprintf( stderr, "usb_get_driver_np failure : %s\n", usb_strerror() );
+    assert( handle != NULL );
+    if( libusb_detach_kernel_driver( handle, interface )!=0 ) {
+        if( debug ) fprintf( stderr, "usb_detach_kernel_driver failure\n" );
     }
-    if ( usb_claim_interface( udev, interface )==0 ) {
-        usb_set_altinterface( udev, interface );
-    } else {
-        if( debug ) fprintf( stderr, "usb_claim_interface failure: %s\n", usb_strerror() );
+    if ( libusb_claim_interface( handle, interface )!=0 ) {
+        if( debug ) fprintf( stderr, "usb_claim_interface failure\n" );
         return K8055_ERROR;
     }
-    usb_set_configuration( udev, 1 );
+    libusb_set_configuration( handle, 1 );
     if ( debug ) fprintf( stderr, "Found interface %d, took over the device\n", interface );
     return 0;
 }
@@ -208,43 +199,62 @@ char* k8055_version( void ) {
 }
 
 int k8055_open_device( struct k8055_dev* dev, int board_address ) {
-    usb_init();
-    usb_find_busses();
-    usb_find_devices();
     int ipid = K8055_IPID + board_address;
-    struct usb_bus* busses = usb_get_busses();
-    for( struct usb_bus* bus=busses; bus; bus=bus->next ) {
-        for( struct usb_device* usb_dev=bus->devices; usb_dev; usb_dev=usb_dev->next ) {
-            if( ( usb_dev->descriptor.idVendor==VELLEMAN_VENDOR_ID ) && ( usb_dev->descriptor.idProduct==ipid ) ) {
-                dev->dev_no = 0;
-                dev->device_handle = usb_open( usb_dev );
-                if( dev->device_handle==NULL ) {
-                    if( debug ) fprintf( stderr,"usb_open failure : %s\n", usb_strerror() );
-                    return K8055_ERROR;
-                }
-                if( debug ) fprintf( stderr, "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n", usb_dev->filename, usb_dev->descriptor.idVendor, usb_dev->descriptor.idProduct );
-                if( k8055_takeover_device( dev->device_handle, 0 )<0 ) {
-                    if( debug ) fprintf( stderr, "Can not take over the device from the OS driver\n" );
-                    usb_close( dev->device_handle );
-                    dev->device_handle = NULL;
-                    return K8055_ERROR;
-                } else {
-                    memset( dev->data_out,0,PACKET_LEN );
-                    dev->dev_no = board_address + 1;
-                    dev->data_out[CMD_OFFSET] = CMD_RESET;
-                    k8055_write( dev );
-                    if ( k8055_read( dev )==0 ) {
-                        if( debug ) fprintf( stderr, "Device %d ready\n", board_address );
-                        return board_address;
-                    } else {
-                        if( debug ) fprintf( stderr, "Device %d not ready\n", board_address );
-                        dev->dev_no = 0;
-                        usb_close( dev->device_handle );
-                        dev->device_handle = NULL;
-                        return K8055_ERROR;
-                    }
-                }
+    libusb_device** list;
+    libusb_device* found = NULL;
+    libusb_init( &dev->usb_ctx );
+    ssize_t cnt = libusb_get_device_list( NULL, &list );
+    if( cnt<0 ) {
+        if( debug ) fprintf( stderr, "Unable to list usb devices\n" );
+        return K8055_ERROR;
+    }
+    for ( ssize_t i=0; i<cnt; i++ ) {
+        libusb_device* usb_dev = list[i];
+        struct libusb_device_descriptor usb_descr;
+        if( libusb_get_device_descriptor( usb_dev, &usb_descr )==0 ) {
+            if( ( usb_descr.idVendor==VELLEMAN_VENDOR_ID ) && ( usb_descr.idProduct==ipid ) ) {
+                // TODO  was usb_dev->filename
+                if( debug ) fprintf( stderr, "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n", "002", usb_descr.idVendor, usb_descr.idProduct );
+                found = usb_dev;
+                break;
             }
+        } else {
+            if( debug ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
+        }
+    }
+    if( found==NULL ) {
+        if( debug ) fprintf( stderr, "No Velleman device found.\n" );
+        return K8055_ERROR;
+    }
+    dev->dev_no = 0;
+    dev->usb_handle = NULL;
+    if( libusb_open( found , &dev->usb_handle )!=0 ) {
+        if( debug ) fprintf( stderr,"usb_open failure\n" );
+        return K8055_ERROR;
+    }
+    if( k8055_takeover_device( dev->usb_handle, 0 )!=0 ) {
+        if( debug ) fprintf( stderr, "Can not take over the device from the OS driver\n" );
+        libusb_release_interface( dev->usb_handle, 0 );
+        libusb_close( dev->usb_handle );
+        libusb_exit( dev->usb_ctx );
+        dev->usb_handle = NULL;
+        return K8055_ERROR;
+    } else {
+        memset( dev->data_out,0,PACKET_LEN );
+        dev->dev_no = board_address + 1;
+        dev->data_out[CMD_OFFSET] = CMD_RESET;
+        k8055_write( dev );
+        if ( k8055_read( dev )==0 ) {
+            if( debug ) fprintf( stderr, "Device %d ready\n", board_address );
+            return board_address;
+        } else {
+            if( debug ) fprintf( stderr, "Device %d not ready\n", board_address );
+            libusb_release_interface( dev->usb_handle, 0 );
+            libusb_close( dev->usb_handle );
+            libusb_exit( dev->usb_ctx );
+            dev->dev_no = 0;
+            dev->usb_handle = NULL;
+            return K8055_ERROR;
         }
     }
     if( debug ) fprintf( stderr, "Could not find Velleman k8055 with address %d\n", board_address );
@@ -254,39 +264,42 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
 int k8055_close_device( struct k8055_dev* dev ) {
     if ( dev->dev_no == 0 ) {
         if ( debug ) fprintf( stderr, "Current device is not open\n" );
-        return 0;
-    }
-    if( dev->device_handle==NULL ) {
+    } else if( dev->usb_handle==NULL ) {
         if ( debug ) fprintf( stderr, "Current device is marked as open, but device hanlde is NULL\n" );
         dev->dev_no = 0;
-        return 0;
-    }
-    int rc = usb_close( dev->device_handle );
-    if ( rc >= 0 ) {
+    } else {
+        if( libusb_release_interface( dev->usb_handle, 0 )!= 0 ) {
+            if( debug ) fprintf( stderr,"libusb_realese_interface failure.\n" );
+        }
+        libusb_close( dev->usb_handle );
         dev->dev_no = 0;
-        dev->device_handle = NULL;
+        dev->usb_handle = NULL;
     }
-    return rc;
+    return 0;
 }
 
 int k8055_search_devices( void ) {
     int ret = 0;
-    usb_init();
-    usb_find_busses();
-    usb_find_devices();
-    struct usb_bus* busses = usb_get_busses();
-    for ( struct usb_bus* bus = busses; bus; bus = bus->next ) {
-        for( struct usb_device* usb_dev=bus->devices; usb_dev; usb_dev=usb_dev->next ) {
-            if ( usb_dev->descriptor.idVendor == VELLEMAN_VENDOR_ID ) {
+    struct libusb_context* usb_ctx;
+    libusb_device** list;
+    struct libusb_device_descriptor usb_descr;
+    libusb_init( &usb_ctx );
+    ssize_t cnt = libusb_get_device_list( NULL, &list );
+    for ( ssize_t i=0; i<cnt; i++ ) {
+        if( libusb_get_device_descriptor( list[i], &usb_descr )==0 ) {
+            if( usb_descr.idVendor==VELLEMAN_VENDOR_ID ) {
                 if( usb_dev->descriptor.idProduct == K8055_IPID + 0 ) ret |= 0x01;
                 if( usb_dev->descriptor.idProduct == K8055_IPID + 1 ) ret |= 0x02;
                 if( usb_dev->descriptor.idProduct == K8055_IPID + 2 ) ret |= 0x04;
                 if( usb_dev->descriptor.idProduct == K8055_IPID + 3 ) ret |= 0x08;
                 /* else some other kind of Velleman board */
             }
+        } else {
+            if( debug ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
         }
     }
-    if( debug ) fprintf( stderr,"found devices : %X\n",ret );
+    if( debug ) fprintf( stderr,"found devices : %X\n", ret );
+    libusb_exit( usb_ctx );
     return ret;
 }
 

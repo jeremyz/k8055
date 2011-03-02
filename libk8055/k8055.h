@@ -37,7 +37,8 @@ extern "C" {
 
     struct k8055_dev {
         int dev_no;
-        struct usb_dev_handle* device_handle;
+        struct libusb_context *usb_ctx;
+        struct libusb_device_handle *usb_handle;
         unsigned char data_in[PACKET_LEN+1];
         unsigned char data_out[PACKET_LEN+1];
     };

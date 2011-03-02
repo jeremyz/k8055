@@ -40,12 +40,29 @@ endfunction()
 #
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
-CHECK_INCLUDE_FILES(usb.h HAVE_USB_H)
+if(NOT WIN32)
+    FIND_PACKAGE(PkgConfig)
+endif()
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(LIBUSB libusb)
+else()
+    MESSAGE(STATUS "Checking for module 'libusb'")
+endif()
+find_path(LIBUSB_INCLUDE_DIR
+    NAMES libusb.h
+    PATHS /usr/include/libusb-1.0 /usr/local/include/libusb-1.0
+)
+find_library(LIBUSB_LDFLAGS
+    NAMES libusb
+)
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBUSB DEFAULT_MSG LIBUSB_LIBRARIES LIBUSB_INCLUDE_DIR)
+mark_as_advanced(LIBUSB_INCLUDE_DIR  LIBUSB_LIBRARIES)
 CHECK_INCLUDE_FILES(string.h HAVE_STRING_H)
 CHECK_INCLUDE_FILES(stdio.h HAVE_STDIO_H)
 CHECK_INCLUDE_FILES(assert.h HAVE_ASSERT_H)
 CHECK_INCLUDE_FILES(math.h HAVE_MATH_H)
-IF (HAVE_USB_H)
+IF (LIBUSB_FOUND)
     ADD_SUBDIRECTORY(libk8055)
 ENDIF()
 #
@@ -65,7 +82,7 @@ ENDIF()
 # BUILD SUMMARY
 #
 COLOR_MESSAGE("\n${_escape}[1;36mBuild Summary${_escape}[0m\n--------------------")
-IF (HAVE_USB_H)
+IF (LIBUSB_FOUND)
     COLOR_MESSAGE("* ${_escape}[1;35mlibusb${_escape}[0m                :   ${_escape}[1;32mfound${_escape}[0m build libk8055")
 ELSE()
     COLOR_MESSAGE("* ${_escape}[1;35mlibusb${_escape}[0m                :   ${_escape}[1;31mmissing${_escape}[0m unable to build libk8055")
