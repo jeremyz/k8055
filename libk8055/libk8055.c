@@ -288,11 +288,7 @@ int k8055_search_devices( void ) {
     for ( ssize_t i=0; i<cnt; i++ ) {
         if( libusb_get_device_descriptor( list[i], &usb_descr )==0 ) {
             if( usb_descr.idVendor==VELLEMAN_VENDOR_ID ) {
-                if( usb_dev->descriptor.idProduct == K8055_IPID + 0 ) ret |= 0x01;
-                if( usb_dev->descriptor.idProduct == K8055_IPID + 1 ) ret |= 0x02;
-                if( usb_dev->descriptor.idProduct == K8055_IPID + 2 ) ret |= 0x04;
-                if( usb_dev->descriptor.idProduct == K8055_IPID + 3 ) ret |= 0x08;
-                /* else some other kind of Velleman board */
+                ret |= 0x01 << ( usb_descr.idProduct-K8055_IPID );
             }
         } else {
             if( debug ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
