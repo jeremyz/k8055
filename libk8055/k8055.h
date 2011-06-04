@@ -85,7 +85,7 @@ extern "C" {
     int k8055_read_all_digital( struct k8055_dev* dev );
     int k8055_write_all_digital( struct k8055_dev* dev, int data );
 
-    int k8055_set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 );
+    int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
     int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
 
     int k8055_reset_counter( struct k8055_dev* dev, int counter );

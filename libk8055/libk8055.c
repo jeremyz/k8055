@@ -210,6 +210,7 @@ char* k8055_version( void ) {
 }
 
 int k8055_open_device( struct k8055_dev* dev, int board_address ) {
+    if(dev->dev_no != 0 ) return K8055_ERROR;
     int ipid = K8055_IPID + board_address;
     libusb_device** list;
     libusb_device* found = NULL;
@@ -237,7 +238,6 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
         if( debug ) fprintf( stderr, "No Velleman device found.\n" );
         return K8055_ERROR;
     }
-    dev->dev_no = 0;
     dev->usb_handle = NULL;
     if( libusb_open( found , &dev->usb_handle )!=0 ) {
         if( debug ) fprintf( stderr,"usb_open failure\n" );
@@ -431,11 +431,11 @@ int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* d
     return 0;
 }
 
-int k8055_set_all_values( struct k8055_dev* dev, int digital_data, int ad_data1, int ad_data2 ) {
+int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 ) {
     dev->data_out[CMD_OFFSET] = CMD_SET_ANALOG_DIGITAL;
-    dev->data_out[DIGITAL_OUT_OFFSET] = ( unsigned char )digital_data;
-    dev->data_out[ANALOG_1_OFFSET] = ( unsigned char )ad_data1;
-    dev->data_out[ANALOG_2_OFFSET] = ( unsigned char )ad_data2;
+    dev->data_out[DIGITAL_OUT_OFFSET] = ( unsigned char )d_data;
+    dev->data_out[ANALOG_1_OFFSET] = ( unsigned char )a_data1;
+    dev->data_out[ANALOG_2_OFFSET] = ( unsigned char )a_data2;
     return k8055_write( dev );
 }
 
