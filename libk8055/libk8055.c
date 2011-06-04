@@ -79,8 +79,9 @@
 
 **/
 
-#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <math.h>
 #include <libusb.h>
@@ -109,6 +110,16 @@
 
 /* set debug to 0 to not print excess info */
 static int debug = 0;
+
+struct k8055_dev* k8055_alloc( void ) {
+    struct k8055_dev *dev = (struct k8055_dev*) malloc( sizeof(struct k8055_dev) );
+    dev->dev_no=0;
+    return dev;
+}
+
+void k8055_free( struct k8055_dev* dev ) {
+    free(dev);
+}
 
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
 int k8055_read( struct k8055_dev* dev ) {

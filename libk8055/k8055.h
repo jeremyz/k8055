@@ -42,6 +42,9 @@ extern "C" {
         unsigned char data_in[PACKET_LEN+1];
         unsigned char data_out[PACKET_LEN+1];
     };
+    struct k8055_dev* k8055_alloc( void );
+    void k8055_free( struct k8055_dev* dev );
+
     int k8055_read( struct k8055_dev* dev );
     int k8055_write( struct k8055_dev* dev );
 
