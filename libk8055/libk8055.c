@@ -325,8 +325,8 @@ int k8055_read_analog_channel( struct k8055_dev* dev, int channel ) {
 
 int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
-    *data1 = dev->data_in[ANALOG_1_OFFSET];
-    *data2 = dev->data_in[ANALOG_2_OFFSET];
+    if(data1) *data1 = dev->data_in[ANALOG_1_OFFSET];
+    if(data2) *data2 = dev->data_in[ANALOG_2_OFFSET];
     return 0;
 }
 
@@ -421,14 +421,14 @@ int k8055_read_all_digital( struct k8055_dev* dev ) {
 
 int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
-    *data1 = (
+    if(data1) *data1 = (
                  ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x03 ) |  /* Input 1 and 2 */
                  ( ( dev->data_in[DIGITAL_INP_OFFSET] << 2 ) & 0x04 ) |  /* Input 3 */
                  ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
-    *data2 = dev->data_in[ANALOG_1_OFFSET];
-    *data3 = dev->data_in[ANALOG_2_OFFSET];
-    *data4 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
-    *data5 = *( ( short int* )( &dev->data_in[COUNTER_2_OFFSET] ) );
+    if(data2) *data2 = dev->data_in[ANALOG_1_OFFSET];
+    if(data3) *data3 = dev->data_in[ANALOG_2_OFFSET];
+    if(data4) *data4 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
+    if(data5) *data5 = *( ( short int* )( &dev->data_in[COUNTER_2_OFFSET] ) );
     return 0;
 }
 
@@ -567,11 +567,11 @@ long ReadAllDigital() {
 int ReadAllValues( long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
     int d1, d2, d3, d4, d5;
     int r = k8055_read_all_values( curr_dev, &d1, &d2, &d3, &d4, &d5 );
-    *data1 = d1;
-    *data2 = d2;
-    *data3 = d3;
-    *data4 = d4;
-    *data5 = d5;
+    if(data1) *data1 = d1;
+    if(data2) *data2 = d2;
+    if(data3) *data3 = d3;
+    if(data4) *data4 = d4;
+    if(data5) *data5 = d5;
     return r;
 }
 int SetAllValues( int DigitalData, int AdData1, int AdData2 ) {
