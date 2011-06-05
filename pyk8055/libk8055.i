@@ -49,8 +49,8 @@ extern int k8055_counter_1( struct k8055_dev* dev );
 extern int k8055_counter_2( struct k8055_dev* dev );
 */
 /*extern char* k8055_version( void );*/
-extern void k8055_set_debug_on( void );
-extern void k8055_set_debug_off( void );
+extern void k8055_set_debug( int status );
+extern void k8055_get_debug( void );
 extern int k8055_search_devices( void );
 extern int k8055_open_device( struct k8055_dev* dev, int board_address );
 extern int k8055_close_device( struct k8055_dev* dev );
@@ -109,10 +109,10 @@ class k8055:
     #    return _pyk8055.k8055_version();
 
     def DebugOn(self):
-        return _pyk8055.k8055_set_debug_on();
+        return _pyk8055.k8055_set_debug(1);
 
     def DebugOff(self):
-        return _pyk8055.k8055_set_debug_off();
+        return _pyk8055.k8055_set_debug(0);
 
     def SearchDevices(self):
         return _pyk8055.k8055_search_devices()
@@ -250,8 +250,8 @@ extern int k8055_counter_1( struct k8055_dev* dev );
 extern int k8055_counter_2( struct k8055_dev* dev );
 */
 /*extern char* k8055_version( void );*/
-extern void k8055_set_debug_on( void );
-extern void k8055_set_debug_off( void );
+extern void k8055_set_debug( int status );
+extern void k8055_get_debug( void );
 extern int k8055_search_devices( void );
 extern int k8055_open_device( struct k8055_dev* dev, int board_address );
 extern int k8055_close_device( struct k8055_dev* dev );

@@ -59,8 +59,8 @@ extern "C" {
     int k8055_counter_2( struct k8055_dev* dev );
 
     char* k8055_version( void );
-    void k8055_set_debug_on( void );
-    void k8055_set_debug_off( void );
+    int k8055_set_debug( int status );
+    int k8055_get_debug( void );
     int k8055_search_devices( void );
 
     int k8055_open_device( struct k8055_dev* dev, int board_address );

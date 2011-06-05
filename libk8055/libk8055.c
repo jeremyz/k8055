@@ -197,12 +197,13 @@ static int k8055_takeover_device( libusb_device_handle* handle, int interface ) 
     return 0;
 }
 
-void k8055_set_debug_on( void ) {
-    debug = 1;
+int k8055_set_debug( int status ) {
+    debug = ((status>0) ? 1 : 0 );
+    return debug;
 }
 
-void k8055_set_debug_off( void ) {
-    debug = 0;
+int k8055_get_debug( void ) {
+    return debug;
 }
 
 char* k8055_version( void ) {

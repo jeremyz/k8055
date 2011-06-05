@@ -111,7 +111,7 @@ int read_param( int argc, char* params[] ) {
                   !str2int( params[i]+6,&dbt2 ) ) erreurParam = true;
         else if ( !strcmp( params[i],"-debug" ) ) {
             debug = 1;
-            k8055_set_debug_on();
+            k8055_set_debug(1);
         } else if ( !strcmp( params[i],"-reset1" ) ) resetcnt1 = true;
         else if ( !strcmp( params[i],"-reset2" ) ) resetcnt2 = true;
         else if ( !strcmp( params[i],"--help" ) ) {
