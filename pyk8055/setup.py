@@ -3,20 +3,23 @@
 import os,sys,string
 from distutils.core import setup, Extension
 
-__revision__ = "$Id: setup.py,v 1.3 2007/03/28 10:17:57 pjetur Exp $"
-
 if 'VERSION' in os.environ:
     version=os.environ['VERSION']
 else:
     from subprocess import *
     try:
-        version = Popen(["grep ^VERSION ../Makefile | cut -d '=' -f 2 | tr -d '\n'"], stdout=PIPE, shell=True).communicate()[0]
+        major = Popen(["grep '(VERSION_MAJOR' ../CMakeLists.txt  | cut -d '\"' -f 2 | tr -d '\n'"], stdout=PIPE, shell=True).communicate()[0]
+        minor = Popen(["grep '(VERSION_MINOR' ../CMakeLists.txt  | cut -d '\"' -f 2 | tr -d '\n'"], stdout=PIPE, shell=True).communicate()[0]
+        patch = Popen(["grep '(VERSION_PATCH' ../CMakeLists.txt  | cut -d '\"' -f 2 | tr -d '\n'"], stdout=PIPE, shell=True).communicate()[0]
+        version = "%s.%s.%s" % (major,minor,patch)
     except:
         version='?.?'
 
 build_modules = [Extension('_pyk8055',
     define_macros = [('VERSION', "\"%s\"" % str(version))],
     libraries=["usb"],
+    extra_compile_args=['-std=c99'],
+    include_dirs=["/usr/include/libusb-1.0","/usr/local/include/libusb-1.0"],
     sources=['libk8055.i',"../libk8055/libk8055.c"])]
 
 setup(
