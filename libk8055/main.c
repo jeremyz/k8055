@@ -145,6 +145,7 @@ int main ( int argc,char* params[] ) {
     int d=0;
     int a1=0,a2=0;
     int c1=0, c2=0;
+    struct k8055_dev *dev;
     unsigned long int start,mstart=0,lastcall=0;
     start = time_msec();
     if ( read_param( argc,params ) ) {
@@ -154,42 +155,46 @@ int main ( int argc,char* params[] ) {
          */
         if ( debug )
             usb_set_debug( 2 );
-        struct k8055_dev dev;
-        if ( k8055_open_device( &dev, ipid )<0 ) {
-            printf( "Could not open the k8055 (port:%d)\nPlease ensure that the device is correctly connected.\n",ipid );
+        dev = k8055_alloc();
+        if(dev==NULL) {
+            fprintf(stderr,"Could not allocate data for k8055_dev struct.\n");
+            return ( EXIT_FAILURE );
+        }
+        if ( k8055_open_device( dev, ipid )<0 ) {
+            fprintf(stderr,"Could not open the k8055 (port:%d)\nPlease ensure that the device is correctly connected.\n",ipid );
             return ( EXIT_FAILURE );
         } else {
             if ( resetcnt1 )
-                k8055_reset_counter( &dev,1 );
+                k8055_reset_counter( dev,1 );
             if ( resetcnt2 )
-                k8055_reset_counter( &dev,2 );
+                k8055_reset_counter( dev,2 );
             if ( dbt1 != -1 )
-                k8055_set_counter_debounce_time( &dev,1,dbt1 );
+                k8055_set_counter_debounce_time( dev,1,dbt1 );
             if ( dbt2 != -1 )
-                k8055_set_counter_debounce_time( &dev,2,dbt1 );
+                k8055_set_counter_debounce_time( dev,2,dbt1 );
             if ( ( ia1!=-1 ) && ( ia2!=-1 ) && ( id8!=-1 ) ) {
-                result = k8055_set_all_values( &dev,id8,ia1,ia2 );
+                result = k8055_set_all_values( dev,id8,ia1,ia2 );
                 if ( debug ) printf( "SetAllValues=%d - Digital:%d, analog1:%d, analog2:%d\n",result,id8,ia1,ia2 );
             } else if ( ( id8 != -1 ) && ( ia1!=-1 ) ) {
-                result = k8055_set_all_values( &dev,id8,ia1,0 );
+                result = k8055_set_all_values( dev,id8,ia1,0 );
                 if ( debug ) printf( "SetAllValues=%d - Digital:%d, analog1:%d\n",result,id8,ia1 );
             } else if ( ( id8 != -1 ) && ( ia2!=-1 ) ) {
-                result = k8055_set_all_values( &dev,id8,0,ia2 );
+                result = k8055_set_all_values( dev,id8,0,ia2 );
                 if ( debug ) printf( "SetAllValues=%d - Digital:%d, analog2:%d\n",result,id8,ia2 );
             } else if ( ( ia1 != -1 ) && ( ia2!=-1 ) ) {
-                result = k8055_set_all_values( &dev,0,ia1,ia2 );
+                result = k8055_set_all_values( dev,0,ia1,ia2 );
                 if ( debug ) printf( "SetAllValues=%d - analog1:%d, analog2:%d\n",result,ia1,ia2 );
             } else {
                 if ( ia1!=-1 ) {
-                    result=k8055_write_analog_channel( &dev,1,ia1 );
+                    result=k8055_write_analog_channel( dev,1,ia1 );
                     if ( debug ) printf( "Set analog1:%d=>%d\n",ia1,result );
                 }
                 if ( ia2!=-1 ) {
-                    result=k8055_write_analog_channel( &dev,2,ia2 );
+                    result=k8055_write_analog_channel( dev,2,ia2 );
                     if ( debug ) printf( "Set analog2:%d=>%d\n",ia2,result );
                 }
                 if ( id8!=-1 ) {
-                    result=k8055_write_all_digital( &dev,id8 );
+                    result=k8055_write_all_digital( dev,id8 );
                     if ( debug ) printf( "Set digital:%d=>%d\n",id8,result );
                 }
             }
@@ -198,12 +203,13 @@ int main ( int argc,char* params[] ) {
                 if ( delay ) {
                     while ( time_msec()-mstart < i*delay );
                 }
-                k8055_read_all_values( &dev,&d,&a1,&a2,&c1,&c2 );
+                k8055_read_all_values( dev,&d,&a1,&a2,&c1,&c2 );
                 lastcall = time_msec();
                 printf( "%d;%d;%d;%d;%d;%d\n", ( int )( lastcall-start ), d, a1, a2, c1, c2 );
             }
-            k8055_close_device( &dev );
+            k8055_close_device( dev );
         }
+        k8055_free(dev);
     }
     return EXIT_SUCCESS;
 }
