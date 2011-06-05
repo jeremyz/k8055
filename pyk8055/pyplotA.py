@@ -23,21 +23,24 @@ class DataPlot(QwtPlot):
         self.a2 = zeros(len(self.x), Float)
 
         self.setTitle("Simple K8055 datascope")
-        #self.setAutoLegend(True)
+        self.insertLegend(Qwt.QwtLegend(), Qwt.QwtPlot.BottomLegend);
 
         self.curve1 = QwtPlotCurve("Input 1")
         self.curve2 = QwtPlotCurve("Input 2")
 
+        self.curve1.attach(self)
+        self.curve2.attach(self)
+
         self.curve1.setPen(QPen(Qt.red))
-        self.curve2.setPen(QPen(Qt.blue))
+        self.curve2.setPen(QPen(Qt.green))
 
         # No automatic scaling, set y-scale 0-255
         self.setAxisScale(QwtPlot.yLeft,0,255,50)
 
-        # set marker line in the middle - value 128
-        #mY = self.insertLineMarker("", QwtPlot.yLeft)
-        mY = QwtPlotMarker()
-        #self.setMarkerYPos(mY, 128.0)
+        mY = Qwt.QwtPlotMarker()
+        mY.setLineStyle(Qwt.QwtPlotMarker.HLine)
+        mY.setYValue(128.0)
+        mY.attach(self)
 
         self.setAxisTitle(QwtPlot.xBottom, "Time (seconds)")
         self.setAxisTitle(QwtPlot.yLeft, "Values")
@@ -59,7 +62,7 @@ class DataPlot(QwtPlot):
         self.a2[0] = self.k.ReadAnalogChannel(2)
 
         self.curve1.setData(self.x, self.a1)
-        self.curve1.setData(self.x, self.a2)
+        self.curve2.setData(self.x, self.a2)
 
         self.replot()
     # timerEvent()

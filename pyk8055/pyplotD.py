@@ -9,23 +9,30 @@ class DataPlot(QwtPlot):
 
     def __init__(self, *args):
         QwtPlot.__init__(self, *args)
+        self.setCanvasBackground(Qt.white)
 
         # Initialize data
         self.x = arrayrange(0.0, 100.1, 0.5)
         self.d1 = 0.0 + zeros(len(self.x), Float)
-        self.d2 = 1.0 + zeros(len(self.x), Float)	# shift data up 1
-        self.d3 = 2.0 + zeros(len(self.x), Float)	# Shift data up 2...
+        self.d2 = 1.0 + zeros(len(self.x), Float)
+        self.d3 = 2.0 + zeros(len(self.x), Float)
         self.d4 = 3.0 + zeros(len(self.x), Float)
         self.d5 = 4.0 + zeros(len(self.x), Float)
 
         self.setTitle("Simple K8055 datascope")
-        #self.setAutoLegend(True)
+        self.insertLegend(Qwt.QwtLegend(), Qwt.QwtPlot.BottomLegend);
 
         self.curve1 = QwtPlotCurve("Input 1")
         self.curve2 = QwtPlotCurve("Input 2")
         self.curve3 = QwtPlotCurve("Input 3")
         self.curve4 = QwtPlotCurve("Input 4")
         self.curve5 = QwtPlotCurve("Input 5")
+
+        self.curve1.attach(self)
+        self.curve2.attach(self)
+        self.curve3.attach(self)
+        self.curve4.attach(self)
+        self.curve5.attach(self)
 
         self.curve1.setPen(QPen(Qt.red))
         self.curve2.setPen(QPen(Qt.blue))
@@ -46,10 +53,8 @@ class DataPlot(QwtPlot):
         self.setAxisTitle(QwtPlot.xBottom, "Time (seconds)")
         self.setAxisTitle(QwtPlot.yLeft, "Values")
 
-        self.startTimer(50)
-
-        # init the K8055 board
         self.k = k8055(0)
+        self.startTimer(50)
     # __init__()
 
     def timerEvent(self, e):
@@ -61,10 +66,10 @@ class DataPlot(QwtPlot):
         self.d1[0] = self.k.ReadDigitalChannel(1) * 0.95
 
         self.d2 = concatenate((self.d2[:1], self.d2[:-1]), 1)
-        self.d2[0] = self.k.ReadDigitalChannel(2) * 0.95 + 1	# Shift data up 1
+        self.d2[0] = self.k.ReadDigitalChannel(2) * 0.95 + 1
 
         self.d3 = concatenate((self.d3[:1], self.d3[:-1]), 1)
-        self.d3[0] = self.k.ReadDigitalChannel(3) * 0.95 + 2	# Shift data up 2...
+        self.d3[0] = self.k.ReadDigitalChannel(3) * 0.95 + 2
 
         self.d4 = concatenate((self.d4[:1], self.d4[:-1]), 1)
         self.d4[0] = self.k.ReadDigitalChannel(4) * 0.95 + 3
