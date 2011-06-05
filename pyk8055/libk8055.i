@@ -128,7 +128,7 @@ class k8055:
         returns 0 if OK,
         Throws IOError if invalid board or not accessible
         """
-        if _pyk8055.open_device(self.dev,BoardAddress) == K8055_ERROR:
+        if _pyk8055.k8055_open_device(self.dev,BoardAddress) == K8055_ERROR:
             raise IOError, "Could not open device"
         # print "Open OK " + str(self.dev)
         return 0
