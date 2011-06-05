@@ -1,16 +1,9 @@
-#!/usr/bin/env python
-# $Id: pyplotD.py,v 1.2 2007/03/15 14:55:38 pjetur Exp $
-#
-# Simple plotting of digital input data from the K8055 board
-#
-# based on the running plot sample from pyQwt
-# The Python version of qwt-*/examples/data_plot/data_plot.cpp
 
-import random, sys
-from qt import *
-from qwt import *
+import sys
 from Numeric import *
-from pyk8055 import *
+from PyQt4.Qt import *
+from PyQt4.Qwt5 import *
+from pyk8055 import k8055
 
 class DataPlot(QwtPlot):
 
@@ -26,26 +19,26 @@ class DataPlot(QwtPlot):
         self.d5 = 4.0 + zeros(len(self.x), Float)
 
         self.setTitle("Simple K8055 datascope")
-        self.setAutoLegend(True)
+        #self.setAutoLegend(True)
 
-        self.curve1 = self.insertCurve("Input 1")
-        self.curve2 = self.insertCurve("Input 2")
-        self.curve3 = self.insertCurve("Input 3")
-        self.curve4 = self.insertCurve("Input 4")
-        self.curve5 = self.insertCurve("Input 5")
+        self.curve1 = QwtPlotCurve("Input 1")
+        self.curve2 = QwtPlotCurve("Input 2")
+        self.curve3 = QwtPlotCurve("Input 3")
+        self.curve4 = QwtPlotCurve("Input 4")
+        self.curve5 = QwtPlotCurve("Input 5")
 
-        self.setCurvePen(self.curve1, QPen(Qt.red))
-        self.setCurvePen(self.curve2, QPen(Qt.blue))
-        self.setCurvePen(self.curve3, QPen(Qt.green))
-        self.setCurvePen(self.curve4, QPen(Qt.black))
-        self.setCurvePen(self.curve5, QPen(Qt.cyan))
+        self.curve1.setPen(QPen(Qt.red))
+        self.curve2.setPen(QPen(Qt.blue))
+        self.curve3.setPen(QPen(Qt.green))
+        self.curve4.setPen(QPen(Qt.black))
+        self.curve5.setPen(QPen(Qt.cyan))
 
         # Make data plot shape square
-        self.setCurveStyle(self.curve1, QwtCurve.Steps)
-        self.setCurveStyle(self.curve2, QwtCurve.Steps)
-        self.setCurveStyle(self.curve3, QwtCurve.Steps)
-        self.setCurveStyle(self.curve4, QwtCurve.Steps)
-        self.setCurveStyle(self.curve5, QwtCurve.Steps)
+        self.curve1.setStyle(QwtPlotCurve.Steps)
+        self.curve2.setStyle(QwtPlotCurve.Steps)
+        self.curve3.setStyle(QwtPlotCurve.Steps)
+        self.curve4.setStyle(QwtPlotCurve.Steps)
+        self.curve5.setStyle(QwtPlotCurve.Steps)
 
         # Fixed axis here from 0 to 5
         self.setAxisScale(QwtPlot.yLeft,0,5,1)
@@ -79,35 +72,30 @@ class DataPlot(QwtPlot):
         self.d5 = concatenate((self.d5[:1], self.d5[:-1]), 1)
         self.d5[0] = self.k.ReadDigitalChannel(5) * 0.95 + 4
 
-        self.setCurveData(self.curve1, self.x, self.d1)
-        self.setCurveData(self.curve2, self.x, self.d2)
-        self.setCurveData(self.curve3, self.x, self.d3)
-        self.setCurveData(self.curve4, self.x, self.d4)
-        self.setCurveData(self.curve5, self.x, self.d5)
+        self.curve1.setData(self.x, self.d1)
+        self.curve2.setData(self.x, self.d2)
+        self.curve3.setData(self.x, self.d3)
+        self.curve4.setData(self.x, self.d4)
+        self.curve5.setData(self.x, self.d5)
 
         self.replot()
-
     # timerEvent()
 
 # class DataPlot
-
-def main(args): 
-    app = QApplication(args)
-    demo = make()
-    app.setMainWidget(demo)
-    app.exec_loop()
-
-# main()
 
 def make():
     demo = DataPlot()
     demo.resize(500, 300)
     demo.show()
     return demo
-
 # make()
 
-# Admire
+def main(args):
+    app = QApplication(args)
+    demo = make()
+    sys.exit(app.exec_())
+# main()
+
 if __name__ == '__main__':
     main(sys.argv)
 

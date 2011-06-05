@@ -6,12 +6,11 @@
 # based on the running plot sample from pyQwt
 # The Python version of qwt-*/examples/data_plot/data_plot.cpp
 
-import random, sys
-from qt import *
-from qwt import *
+import sys
 from Numeric import *
-from pyk8055 import *
-
+from PyQt4.Qt import *
+from PyQt4.Qwt5 import *
+from pyk8055 import k8055
 
 class DataPlot(QwtPlot):
 
@@ -24,20 +23,21 @@ class DataPlot(QwtPlot):
         self.a2 = zeros(len(self.x), Float)
 
         self.setTitle("Simple K8055 datascope")
-        self.setAutoLegend(True)
+        #self.setAutoLegend(True)
 
-        self.curve1 = self.insertCurve("Input 1")
-        self.curve2 = self.insertCurve("Input 2")
+        self.curve1 = QwtPlotCurve("Input 1")
+        self.curve2 = QwtPlotCurve("Input 2")
 
-        self.setCurvePen(self.curve1, QPen(Qt.red))
-        self.setCurvePen(self.curve2, QPen(Qt.blue))
+        self.curve1.setPen(QPen(Qt.red))
+        self.curve2.setPen(QPen(Qt.blue))
 
         # No automatic scaling, set y-scale 0-255
         self.setAxisScale(QwtPlot.yLeft,0,255,50)
 
         # set marker line in the middle - value 128
-        mY = self.insertLineMarker("", QwtPlot.yLeft)      
-        self.setMarkerYPos(mY, 128.0)
+        #mY = self.insertLineMarker("", QwtPlot.yLeft)
+        mY = QwtPlotMarker()
+        #self.setMarkerYPos(mY, 128.0)
 
         self.setAxisTitle(QwtPlot.xBottom, "Time (seconds)")
         self.setAxisTitle(QwtPlot.yLeft, "Values")
@@ -58,31 +58,27 @@ class DataPlot(QwtPlot):
         self.a2 = concatenate((self.a2[:1], self.a2[:-1]), 1)
         self.a2[0] = self.k.ReadAnalogChannel(2)
 
-        self.setCurveData(self.curve1, self.x, self.a1)
-        self.setCurveData(self.curve2, self.x, self.a2)
+        self.curve1.setData(self.x, self.a1)
+        self.curve1.setData(self.x, self.a2)
 
         self.replot()
-
     # timerEvent()
 
 # class DataPlot
-
-def main(args): 
-    app = QApplication(args)
-    demo = make()
-    app.setMainWidget(demo)
-    app.exec_loop()
-
-# main()
 
 def make():
     demo = DataPlot()
     demo.resize(500, 300)
     demo.show()
     return demo
-
 # make()
 
-# Admire
+
+def main(args):
+    app = QApplication(args)
+    demo = make()
+    sys.exit(app.exec_())
+# main()
+
 if __name__ == '__main__':
     main(sys.argv)
