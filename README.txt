@@ -6,3 +6,9 @@ build test and install libk8055, k8055 and k8055gui:
 user access to the k8055 device:
 	read comments in velleman.rules
 
+special thanks to:
+    * Sven Lindberg
+    * Pjetur G. Hjaltason
+    * Martin Pischky
+    * Etienne Mouragnon
+
