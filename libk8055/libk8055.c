@@ -112,13 +112,13 @@
 static int debug = 0;
 
 struct k8055_dev* k8055_alloc( void ) {
-    struct k8055_dev *dev = (struct k8055_dev*) malloc( sizeof(struct k8055_dev) );
+    struct k8055_dev* dev = ( struct k8055_dev* ) malloc( sizeof( struct k8055_dev ) );
     dev->dev_no=0;
     return dev;
 }
 
 void k8055_free( struct k8055_dev* dev ) {
-    free(dev);
+    free( dev );
 }
 
 /* Actual read of data from the device endpoint, retry READ_RETRY times if not responding ok */
@@ -230,7 +230,7 @@ static int k8055_takeover_device( libusb_device_handle* handle, int interface ) 
 }
 
 int k8055_set_debug( int status ) {
-    debug = ((status>0) ? 1 : 0 );
+    debug = ( ( status>0 ) ? 1 : 0 );
     return debug;
 }
 
@@ -243,7 +243,7 @@ char* k8055_version( void ) {
 }
 
 int k8055_open_device( struct k8055_dev* dev, int board_address ) {
-    if(dev->dev_no != 0 ) return K8055_ERROR;
+    if( dev->dev_no != 0 ) return K8055_ERROR;
     int ipid = K8055_IPID + board_address;
     libusb_device** list;
     libusb_device* found = NULL;
@@ -357,8 +357,8 @@ int k8055_read_analog_channel( struct k8055_dev* dev, int channel ) {
 
 int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
-    if(data1) *data1 = dev->data_in[ANALOG_1_OFFSET];
-    if(data2) *data2 = dev->data_in[ANALOG_2_OFFSET];
+    if( data1 ) *data1 = dev->data_in[ANALOG_1_OFFSET];
+    if( data2 ) *data2 = dev->data_in[ANALOG_2_OFFSET];
     return 0;
 }
 
@@ -453,14 +453,14 @@ int k8055_read_all_digital( struct k8055_dev* dev ) {
 
 int k8055_read_all_inputs( struct k8055_dev* dev, int* digital, int* analog1, int* analog2, int* counter1, int* counter2 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
-    if(digital) *digital = (
-                 ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x03 ) |  /* Input 1 and 2 */
-                 ( ( dev->data_in[DIGITAL_INP_OFFSET] << 2 ) & 0x04 ) |  /* Input 3 */
-                 ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
-    if(analog1) *analog1 = dev->data_in[ANALOG_1_OFFSET];
-    if(analog2) *analog2 = dev->data_in[ANALOG_2_OFFSET];
-    if(counter1) *counter1 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
-    if(counter2) *counter2 = *( ( short int* )( &dev->data_in[COUNTER_2_OFFSET] ) );
+    if( digital ) *digital = (
+                                     ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x03 ) |  /* Input 1 and 2 */
+                                     ( ( dev->data_in[DIGITAL_INP_OFFSET] << 2 ) & 0x04 ) |  /* Input 3 */
+                                     ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
+    if( analog1 ) *analog1 = dev->data_in[ANALOG_1_OFFSET];
+    if( analog2 ) *analog2 = dev->data_in[ANALOG_2_OFFSET];
+    if( counter1 ) *counter1 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
+    if( counter2 ) *counter2 = *( ( short int* )( &dev->data_in[COUNTER_2_OFFSET] ) );
     return 0;
 }
 
@@ -599,11 +599,11 @@ long ReadAllDigital() {
 int ReadAllValues( long int* data1, long int* data2, long int* data3, long int* data4, long int* data5 ) {
     int d1, d2, d3, d4, d5;
     int r = k8055_read_all_inputs( curr_dev, &d1, &d2, &d3, &d4, &d5 );
-    if(data1) *data1 = d1;
-    if(data2) *data2 = d2;
-    if(data3) *data3 = d3;
-    if(data4) *data4 = d4;
-    if(data5) *data5 = d5;
+    if( data1 ) *data1 = d1;
+    if( data2 ) *data2 = d2;
+    if( data3 ) *data3 = d3;
+    if( data4 ) *data4 = d4;
+    if( data5 ) *data5 = d5;
     return r;
 }
 int SetAllValues( int DigitalData, int AdData1, int AdData2 ) {
