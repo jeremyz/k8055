@@ -3,6 +3,8 @@
 #
 # To access the devices under a regular user account, you must
 # be in the k8055 group. 
+#  $ groupadd k8055
+#  $ usermod -a -G k8055 username
 #
 # You can add a RUN="..." attribute to run some arbitrary script
 # when the device is plugged in.
