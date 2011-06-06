@@ -69,8 +69,8 @@ extern int k8055_set_all_digital( struct k8055_dev* dev );
 extern int k8055_clear_all_digital( struct k8055_dev* dev );
 extern int k8055_read_all_digital( struct k8055_dev* dev );
 /*extern int k8055_write_all_digital( struct k8055_dev* dev, int data );*/
-extern int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
-extern int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
+extern int k8055_write_all_outputs( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
+extern int k8055_read_all_inputs( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
 extern int k8055_reset_counter( struct k8055_dev* dev, int counter );
 extern int k8055_read_counter( struct k8055_dev* dev, int counter );
 extern int k8055_set_counter_debounce_time( struct k8055_dev* dev, int counter, int debounce_time );
@@ -212,7 +212,7 @@ class k8055:
 
     def SetAllValues(self,ddata, adata1, adata2):
         """Write digital output channel bitmask (0-255) and both analog channels data (0-255,0-255)"""
-        return _pyk8055.k8055_set_all_values(self.dev,ddata, adata1, adata2)
+        return _pyk8055.k8055_write_all_outputs(self.dev,ddata, adata1, adata2)
 
     def ReadAllValues(self):
         """Read data from all input channels at once
@@ -220,7 +220,7 @@ class k8055:
         Returns list, [return-value,digital input data, analog channel_data1, analog channel_data2, counter1, counter2]
 
         """
-        return _pyk8055.k8055_read_all_values(self.dev)
+        return _pyk8055.k8055_read_all_inputs(self.dev)
 
     def ResetCounter(self,CounterNo):
         """Reset input counter (1/2), input channel 1/2"""
@@ -270,8 +270,8 @@ extern int k8055_set_all_digital( struct k8055_dev* dev );
 extern int k8055_clear_all_digital( struct k8055_dev* dev );
 extern int k8055_read_all_digital( struct k8055_dev* dev );
 /*extern int k8055_write_all_digital( struct k8055_dev* dev, int data );*/
-extern int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
-extern int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
+extern int k8055_write_all_outputs( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
+extern int k8055_read_all_inputs( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
 extern int k8055_reset_counter( struct k8055_dev* dev, int counter );
 extern int k8055_read_counter( struct k8055_dev* dev, int counter );
 extern int k8055_set_counter_debounce_time( struct k8055_dev* dev, int counter, int debounce_time );

@@ -78,8 +78,8 @@ class K8055 {
         int ReadAllDigital();
         int WriteAllDigital( int data );
 
-        int SetAllValues( int digital_data, int ad_data1, int ad_data2 );
-        int ReadAllValues ( int*  data1, int* data2, int* data3, int* data4, int* data5 );
+        int WriteAllOutputs( int digital, int analog1, int analog2 );
+        int ReadAllInputs ( int* digital, int* analog1, int* analog2, int* counter1, int* counter2 );
 
         int ResetCounter( int counter );
         int ReadCounter( int counter );

@@ -182,12 +182,12 @@ int K8055::WriteAllDigital( int data ) {
     return k8055_write_all_digital( &dev, data );
 }
 
-int K8055::SetAllValues( int digital_data, int ad_data1, int ad_data2 ) {
-    return k8055_set_all_values( &dev, digital_data, ad_data1, ad_data2 );
+int K8055::WriteAllOutputs( int digital, int analog1, int analog2 ) {
+    return k8055_write_all_outputs( &dev, digital, analog1, analog2 );
 }
 
-int K8055::ReadAllValues ( int*  data1, int* data2, int* data3, int* data4, int* data5 ) {
-    return k8055_read_all_values( &dev, data1, data2, data3, data4, data5 );
+int K8055::ReadAllInputs ( int*  digital, int* analog1, int* analog2, int* counter1, int* counter2 ) {
+    return k8055_read_all_inputs( &dev, digital, analog1, analog2, counter1, counter2 );
 }
 
 int K8055::ResetCounter( int counter ) {

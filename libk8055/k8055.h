@@ -97,8 +97,8 @@ extern "C" {
     int k8055_read_digital_channel( struct k8055_dev* dev, int channel );
     int k8055_read_all_digital( struct k8055_dev* dev );
 
-    int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
-    int k8055_read_all_values( struct k8055_dev* dev, int* digital, int* analog1, int* analog2, int* counter1, int* counter2 );
+    int k8055_write_all_outputs( struct k8055_dev* dev, int digital, int analog1, int analog2 );
+    int k8055_read_all_inputs( struct k8055_dev* dev, int* digital, int* analog1, int* analog2, int* counter1, int* counter2 );
 
     int k8055_reset_counter( struct k8055_dev* dev, int counter );
     int k8055_read_counter( struct k8055_dev* dev, int counter );

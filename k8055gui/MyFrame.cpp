@@ -215,7 +215,7 @@ void MyFrame::OnBnClickedOutputtest(wxCommandEvent& WXUNUSED(event))
     k8055.ClearAllDigital();
     k8055.ClearAllAnalog();
     k8055.SetAnalogChannel( 1 );
-    for( int i=0, j=255; i<256; i++, j--) k8055.SetAllValues(i,i,j);
+    for( int i=0, j=255; i<256; i++, j--) k8055.WriteAllOutputs(i,i,j);
     k8055.ClearAllDigital();
     k8055.ClearAllAnalog();
     OutputTest->SetValue(false);
@@ -345,7 +345,7 @@ void MyFrame::OnIdle(wxIdleEvent& event)
      { 
        //read data
        int data1, data2, data3, data4, data5;
-       k8055.ReadAllValues(&data1, &data2, &data3, &data4, &data5);
+       k8055.ReadAllInputs(&data1, &data2, &data3, &data4, &data5);
 
        //print data on interface
        I1->SetValue(data1 & 0x01);

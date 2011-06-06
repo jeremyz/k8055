@@ -173,16 +173,16 @@ int main ( int argc,char* params[] ) {
             if ( dbt2 != -1 )
                 k8055_set_counter_debounce_time( dev,2,dbt1 );
             if ( ( ia1!=-1 ) && ( ia2!=-1 ) && ( id8!=-1 ) ) {
-                result = k8055_set_all_values( dev,id8,ia1,ia2 );
+                result = k8055_write_all_outputs( dev,id8,ia1,ia2 );
                 if ( debug ) printf( "SetAllValues=%d - Digital:%d, analog1:%d, analog2:%d\n",result,id8,ia1,ia2 );
             } else if ( ( id8 != -1 ) && ( ia1!=-1 ) ) {
-                result = k8055_set_all_values( dev,id8,ia1,0 );
+                result = k8055_write_all_outputs( dev,id8,ia1,0 );
                 if ( debug ) printf( "SetAllValues=%d - Digital:%d, analog1:%d\n",result,id8,ia1 );
             } else if ( ( id8 != -1 ) && ( ia2!=-1 ) ) {
-                result = k8055_set_all_values( dev,id8,0,ia2 );
+                result = k8055_write_all_outputs( dev,id8,0,ia2 );
                 if ( debug ) printf( "SetAllValues=%d - Digital:%d, analog2:%d\n",result,id8,ia2 );
             } else if ( ( ia1 != -1 ) && ( ia2!=-1 ) ) {
-                result = k8055_set_all_values( dev,0,ia1,ia2 );
+                result = k8055_write_all_outputs( dev,0,ia1,ia2 );
                 if ( debug ) printf( "SetAllValues=%d - analog1:%d, analog2:%d\n",result,ia1,ia2 );
             } else {
                 if ( ia1!=-1 ) {
@@ -203,7 +203,7 @@ int main ( int argc,char* params[] ) {
                 if ( delay ) {
                     while ( time_msec()-mstart < i*delay );
                 }
-                k8055_read_all_values( dev,&d,&a1,&a2,&c1,&c2 );
+                k8055_read_all_inputs( dev,&d,&a1,&a2,&c1,&c2 );
                 lastcall = time_msec();
                 printf( "%d;%d;%d;%d;%d;%d\n", ( int )( lastcall-start ), d, a1, a2, c1, c2 );
             }
