@@ -42,19 +42,29 @@ extern "C" {
         unsigned char data_in[PACKET_LEN+1];
         unsigned char data_out[PACKET_LEN+1];
     };
+    /* create/destroy struct */
     struct k8055_dev* k8055_alloc( void );
     void k8055_free( struct k8055_dev* dev );
-
+    /* read data_in / write data_out */
     int k8055_read( struct k8055_dev* dev );
     int k8055_write( struct k8055_dev* dev );
 
-    int k8055_digital_1( struct k8055_dev* dev );
-    int k8055_digital_2( struct k8055_dev* dev );
-    int k8055_digital_3( struct k8055_dev* dev );
-    int k8055_digital_4( struct k8055_dev* dev );
-    int k8055_digital_5( struct k8055_dev* dev );
-    int k8055_analog_1( struct k8055_dev* dev );
-    int k8055_analog_2( struct k8055_dev* dev );
+    /* access output data */
+    int k8055_digital_output_1( struct k8055_dev* dev );
+    int k8055_digital_output_2( struct k8055_dev* dev );
+    int k8055_digital_output_3( struct k8055_dev* dev );
+    int k8055_digital_output_4( struct k8055_dev* dev );
+    int k8055_digital_output_5( struct k8055_dev* dev );
+    int k8055_analog_output_1( struct k8055_dev* dev );
+    int k8055_analog_output_2( struct k8055_dev* dev );
+    /* access input data */
+    int k8055_digital_input_1( struct k8055_dev* dev );
+    int k8055_digital_input_2( struct k8055_dev* dev );
+    int k8055_digital_input_3( struct k8055_dev* dev );
+    int k8055_digital_input_4( struct k8055_dev* dev );
+    int k8055_digital_input_5( struct k8055_dev* dev );
+    int k8055_analog_input_1( struct k8055_dev* dev );
+    int k8055_analog_input_2( struct k8055_dev* dev );
     int k8055_counter_1( struct k8055_dev* dev );
     int k8055_counter_2( struct k8055_dev* dev );
 
@@ -66,24 +76,25 @@ extern "C" {
     int k8055_open_device( struct k8055_dev* dev, int board_address );
     int k8055_close_device( struct k8055_dev* dev );
 
+    /* analog outputs */
     int k8055_set_analog_channel( struct k8055_dev* dev, int channel );
     int k8055_clear_analog_channel( struct k8055_dev* dev, int channel );
-    int k8055_read_analog_channel( struct k8055_dev* dev, int channel );
     int k8055_write_analog_channel( struct k8055_dev* dev ,int channel, int data );
-
     int k8055_set_all_analog( struct k8055_dev* dev );
     int k8055_clear_all_analog( struct k8055_dev* dev );
-    int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 );
     int k8055_write_all_analog( struct k8055_dev* dev, int data1, int data2 );
-
+    /* analog inputs */
+    int k8055_read_analog_channel( struct k8055_dev* dev, int channel );
+    int k8055_read_all_analog( struct k8055_dev* dev, int* data1, int* data2 );
+    /* digital outputs */
     int k8055_set_digital_channel( struct k8055_dev* dev, int channel );
     int k8055_clear_digital_channel( struct k8055_dev* dev, int channel );
-    int k8055_read_digital_channel( struct k8055_dev* dev, int channel );
-
     int k8055_set_all_digital( struct k8055_dev* dev );
     int k8055_clear_all_digital( struct k8055_dev* dev );
-    int k8055_read_all_digital( struct k8055_dev* dev );
     int k8055_write_all_digital( struct k8055_dev* dev, int data );
+    /* digital inputs */
+    int k8055_read_digital_channel( struct k8055_dev* dev, int channel );
+    int k8055_read_all_digital( struct k8055_dev* dev );
 
     int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
     int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );

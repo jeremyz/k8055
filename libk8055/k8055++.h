@@ -35,13 +35,20 @@ class K8055 {
         int read( void );
         int write( void );
 
-        int digital_1( void );
-        int digital_2( void );
-        int digital_3( void );
-        int digital_4( void );
-        int digital_5( void );
-        int analog_1( void );
-        int analog_2( void );
+        int digital_output_1( void );
+        int digital_output_2( void );
+        int digital_output_3( void );
+        int digital_output_4( void );
+        int digital_output_5( void );
+        int analog_output_1( void );
+        int analog_output_2( void );
+        int digital_input_1( void );
+        int digital_input_2( void );
+        int digital_input_3( void );
+        int digital_input_4( void );
+        int digital_input_5( void );
+        int analog_input_1( void );
+        int analog_input_2( void );
         int counter_1( void );
         int counter_2( void );
 

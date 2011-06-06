@@ -39,32 +39,60 @@ int K8055::write( void ) {
     return k8055_write( &dev );
 }
 
-int K8055::digital_1( void ) {
-    return k8055_digital_1( &dev );
+int K8055::digital_output_1( void ) {
+    return k8055_digital_output_1( &dev );
 }
 
-int K8055::digital_2( void ) {
-    return k8055_digital_2( &dev );
+int K8055::digital_output_2( void ) {
+    return k8055_digital_output_2( &dev );
 }
 
-int K8055::digital_3( void ) {
-    return k8055_digital_3( &dev );
+int K8055::digital_output_3( void ) {
+    return k8055_digital_output_3( &dev );
 }
 
-int K8055::digital_4( void ) {
-    return k8055_digital_4( &dev );
+int K8055::digital_output_4( void ) {
+    return k8055_digital_output_4( &dev );
 }
 
-int K8055::digital_5( void ) {
-    return k8055_digital_5( &dev );
+int K8055::digital_output_5( void ) {
+    return k8055_digital_output_5( &dev );
 }
 
-int K8055::analog_1( void ) {
-    return k8055_analog_1( &dev );
+int K8055::analog_output_1( void ) {
+    return k8055_analog_output_1( &dev );
 }
 
-int K8055::analog_2( void ) {
-    return k8055_analog_2( &dev );
+int K8055::analog_output_2( void ) {
+    return k8055_analog_input_2( &dev );
+}
+
+int K8055::digital_input_1( void ) {
+    return k8055_digital_input_1( &dev );
+}
+
+int K8055::digital_input_2( void ) {
+    return k8055_digital_input_2( &dev );
+}
+
+int K8055::digital_input_3( void ) {
+    return k8055_digital_input_3( &dev );
+}
+
+int K8055::digital_input_4( void ) {
+    return k8055_digital_input_4( &dev );
+}
+
+int K8055::digital_input_5( void ) {
+    return k8055_digital_input_5( &dev );
+}
+
+int K8055::analog_input_1( void ) {
+    return k8055_analog_input_1( &dev );
+}
+
+int K8055::analog_input_2( void ) {
+    return k8055_analog_input_2( &dev );
 }
 
 int K8055::counter_1( void ) {

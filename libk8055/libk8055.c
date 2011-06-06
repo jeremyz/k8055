@@ -143,31 +143,59 @@ int k8055_write( struct k8055_dev* dev ) {
     return K8055_ERROR;
 }
 
-int k8055_digital_1( struct k8055_dev* dev ) {
+int k8055_digital_output_1( struct k8055_dev* dev ) {
+    return ( ( dev->data_out[DIGITAL_OUT_OFFSET] ) & 0x01 );
+}
+
+int k8055_digital_output_2( struct k8055_dev* dev ) {
+    return ( ( dev->data_out[DIGITAL_OUT_OFFSET] >> 1 ) & 0x01 );
+}
+
+int k8055_digital_output_3( struct k8055_dev* dev ) {
+    return ( ( dev->data_out[DIGITAL_OUT_OFFSET] >> 2 ) & 0x01 );
+}
+
+int k8055_digital_output_4( struct k8055_dev* dev ) {
+    return ( ( dev->data_out[DIGITAL_OUT_OFFSET] >> 3 ) & 0x01 );
+}
+
+int k8055_digital_output_5( struct k8055_dev* dev ) {
+    return ( ( dev->data_out[DIGITAL_OUT_OFFSET] >> 4 ) & 0x01 );
+}
+
+int k8055_analog_output_1( struct k8055_dev* dev ) {
+    return dev->data_out[ANALOG_1_OFFSET];
+}
+
+int k8055_analog_output_2( struct k8055_dev* dev ) {
+    return dev->data_out[ANALOG_2_OFFSET];
+}
+
+int k8055_digital_input_1( struct k8055_dev* dev ) {
     return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x01 );
 }
 
-int k8055_digital_2( struct k8055_dev* dev ) {
+int k8055_digital_input_2( struct k8055_dev* dev ) {
     return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 5 ) & 0x01 );
 }
 
-int k8055_digital_3( struct k8055_dev* dev ) {
+int k8055_digital_input_3( struct k8055_dev* dev ) {
     return ( ( dev->data_in[DIGITAL_INP_OFFSET] ) & 0x01 );
 }
 
-int k8055_digital_4( struct k8055_dev* dev ) {
+int k8055_digital_input_4( struct k8055_dev* dev ) {
     return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 6 ) & 0x01 );
 }
 
-int k8055_digital_5( struct k8055_dev* dev ) {
+int k8055_digital_input_5( struct k8055_dev* dev ) {
     return ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 7 ) & 0x01 );
 }
 
-int k8055_analog_1( struct k8055_dev* dev ) {
+int k8055_analog_input_1( struct k8055_dev* dev ) {
     return dev->data_in[ANALOG_1_OFFSET];
 }
 
-int k8055_analog_2( struct k8055_dev* dev ) {
+int k8055_analog_input_2( struct k8055_dev* dev ) {
     return dev->data_in[ANALOG_2_OFFSET];
 }
 
@@ -179,14 +207,14 @@ int k8055_counter_2( struct k8055_dev* dev ) {
     return dev->data_in[COUNTER_2_OFFSET];
 }
 
-/* If device is owned by some kernel driver, try to disconnect it and claim the device*/
+/* If device is owned by some kernel driver, try to disconnect it and clanalog_inputm the device*/
 static int k8055_takeover_device( libusb_device_handle* handle, int interface ) {
     char driver_name[STR_BUFF];
     memset( driver_name, 0, STR_BUFF );
     int ret = K8055_ERROR;
     assert( handle != NULL );
     if( libusb_detach_kernel_driver( handle, interface )!=0 ) {
-        if( debug ) fprintf( stderr, "usb_detach_kernel_driver failure\n" );
+        if( debug ) fprintf( stderr, "usb_detach_kernel_driver fanalog_inputlure\n" );
     }
     if ( libusb_claim_interface( handle, interface )!=0 ) {
         if( debug ) fprintf( stderr, "usb_claim_interface failure\n" );
