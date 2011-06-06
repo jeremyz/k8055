@@ -1,0 +1,15 @@
+
+# CHECK
+    - k8055_open_device and k8055_search_devices consistency with multiple cards
+
+# FIX
+    - python
+        - k8055qt.py + cmake build
+        - cmake install same as setup.py
+    - java
+
+# WRITE
+    - ruby-C binding
+    - fuse fs driver
+    - kernel driver
+
