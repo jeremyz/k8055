@@ -38,6 +38,11 @@ function cmake_make() {
     cd ..
 }
 
+function cmake_install() {
+    cmake_init
+    echo -e " * install" && cd $BUILD_DIR && sudo make install && cd .. || exit 1
+}
+
 function cmake_tests() {
     cmake_init
     echo -e " * execute tests\n" && time ./libk8055/test
@@ -46,11 +51,12 @@ function cmake_tests() {
 if [ $# -eq 0 ]; then
     echo "usage $0 [cmds list]"
     echo "cmds may be"
-    echo "   r[m]     => all built, temp and cache files"
-    echo "   c[lean]  => remove cache files"
-    echo "   m[ake]   => launch the build process"
-    echo "   t[ests]  => execute tests"
-    echo "ex: $0 r m pkg x"
+    echo "   r[m]      => all built, temp and cache files"
+    echo "   c[lean]   => remove cache files"
+    echo "   m[ake]    => launch the build process"
+    echo "   t[ests]   => execute tests"
+    echo "   i[nstall] => install libk8055 k8055, and k8055gui"
+    echo "ex: $0 r m t i"
     exit 1
 fi
 
@@ -64,6 +70,8 @@ for arg in $@; do
             cmd="cmake_make";;
         t|test)
             cmd="cmake_tests";;
+        i|install)
+            cmd="cmake_install";;
         *)
          echo "unknown command ${arg}" && exit 1
      esac
