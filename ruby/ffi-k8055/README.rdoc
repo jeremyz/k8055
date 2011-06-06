@@ -1,0 +1,69 @@
+ffi-k8055
+    by Jérémy Zurcher
+    http://asynk.ch
+
+== DESCRIPTION:
+
+A ruby-ffi binding to libk8055, an open source library to access Velleman's k8055 USB board.
+This is part of k8055[https://github.com/jeremyz/k8055]
+
+== FEATURES/PROBLEMS:
+
+    # TODO
+
+== SYNOPSIS:
+
+    require 'k8055'
+    puts "K8055 version : #{K8055.version}"
+    @k = K8055::K8055.new
+    @k.open_device 0
+    @k.write_analog_channel 1, 128
+    @k.k8055_set_analog_channel 2
+    @k.close_device
+
+For more examples you may look at:
+
+* the spec/[https://github.com/jeremyz/k8055/tree/master/ruby/ffi-k8055/spec] folder
+
+
+
+== REQUIREMENTS:
+
+* You need to first install libk8055[https://github.com/jeremyz/k8055]
+
+== DOWNLOAD/INSTALL:
+
+From rubygems:
+
+  [sudo] gem install ffi-k8055
+
+or from the git repository on github:
+
+  git clone git://github.com/jeremyz/k8055.git
+  cd k8055/ruby/ffi-k8055
+  rake gem:install
+
+== RESOURCES:
+
+You can find this project in a few places:
+
+Online repositories:
+
+* https://github.com/jeremyz/k8055
+* http://cgit.asynk.ch/cgi-bin/cgit/k8055
+* https://gitorious.org/k8055
+
+Gem:
+
+* https://rubygems.org/gems/ffi-k8055
+
+== CREDITS:
+
+Special thanks to:
+
+* Sven Lindberg
+* Pjetur G. Hjaltason
+
+== LICENSE:
+
+See MIT-LICENSE file.
