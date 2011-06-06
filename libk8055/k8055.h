@@ -50,6 +50,7 @@ extern "C" {
     int k8055_write( struct k8055_dev* dev );
 
     /* access output data */
+    int k8055_digital_outputs( struct k8055_dev* dev );
     int k8055_digital_output_1( struct k8055_dev* dev );
     int k8055_digital_output_2( struct k8055_dev* dev );
     int k8055_digital_output_3( struct k8055_dev* dev );
@@ -97,7 +98,7 @@ extern "C" {
     int k8055_read_all_digital( struct k8055_dev* dev );
 
     int k8055_set_all_values( struct k8055_dev* dev, int d_data, int a_data1, int a_data2 );
-    int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 );
+    int k8055_read_all_values( struct k8055_dev* dev, int* digital, int* analog1, int* analog2, int* counter1, int* counter2 );
 
     int k8055_reset_counter( struct k8055_dev* dev, int counter );
     int k8055_read_counter( struct k8055_dev* dev, int counter );

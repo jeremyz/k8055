@@ -39,6 +39,10 @@ int K8055::write( void ) {
     return k8055_write( &dev );
 }
 
+int K8055::digital_outputs( void ) {
+    return k8055_digital_outputs( &dev );
+}
+
 int K8055::digital_output_1( void ) {
     return k8055_digital_output_1( &dev );
 }

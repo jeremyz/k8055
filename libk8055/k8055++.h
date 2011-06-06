@@ -35,6 +35,7 @@ class K8055 {
         int read( void );
         int write( void );
 
+        int digital_outputs( void );
         int digital_output_1( void );
         int digital_output_2( void );
         int digital_output_3( void );

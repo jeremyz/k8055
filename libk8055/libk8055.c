@@ -143,6 +143,10 @@ int k8055_write( struct k8055_dev* dev ) {
     return K8055_ERROR;
 }
 
+int k8055_digital_outputs( struct k8055_dev* dev ) {
+    return dev->data_out[DIGITAL_OUT_OFFSET];
+}
+
 int k8055_digital_output_1( struct k8055_dev* dev ) {
     return ( ( dev->data_out[DIGITAL_OUT_OFFSET] ) & 0x01 );
 }
@@ -447,16 +451,16 @@ int k8055_read_all_digital( struct k8055_dev* dev ) {
     return return_data;
 }
 
-int k8055_read_all_values( struct k8055_dev* dev, int* data1, int* data2, int* data3, int* data4, int* data5 ) {
+int k8055_read_all_values( struct k8055_dev* dev, int* digital, int* analog1, int* analog2, int* counter1, int* counter2 ) {
     if ( k8055_read( dev )!=0 ) return K8055_ERROR;
-    if(data1) *data1 = (
+    if(digital) *digital = (
                  ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 4 ) & 0x03 ) |  /* Input 1 and 2 */
                  ( ( dev->data_in[DIGITAL_INP_OFFSET] << 2 ) & 0x04 ) |  /* Input 3 */
                  ( ( dev->data_in[DIGITAL_INP_OFFSET] >> 3 ) & 0x18 ) ); /* Input 4 and 5 */
-    if(data2) *data2 = dev->data_in[ANALOG_1_OFFSET];
-    if(data3) *data3 = dev->data_in[ANALOG_2_OFFSET];
-    if(data4) *data4 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
-    if(data5) *data5 = *( ( short int* )( &dev->data_in[COUNTER_2_OFFSET] ) );
+    if(analog1) *analog1 = dev->data_in[ANALOG_1_OFFSET];
+    if(analog2) *analog2 = dev->data_in[ANALOG_2_OFFSET];
+    if(counter1) *counter1 = *( ( short int* )( &dev->data_in[COUNTER_1_OFFSET] ) );
+    if(counter2) *counter2 = *( ( short int* )( &dev->data_in[COUNTER_2_OFFSET] ) );
     return 0;
 }
 
