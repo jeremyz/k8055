@@ -66,7 +66,7 @@ module K8055
             [ :k8055_write_all_outputs, [:k8055_dev,:int,:int,:int], :int],
             [ :k8055_read_all_inputs, [:k8055_dev,:pointer,:pointer,:pointer,:pointer,:pointer], :int],
             [ :k8055_reset_counter, [:k8055_dev,:int], :int],
-            [ :k8055_read_counter, [:k8055_dev,:int], :int],
+            [ :k8055_read_counter, [:k8055_dev,:int], :int]
         ].each do |func|
             begin
                 attach_function(*func)
