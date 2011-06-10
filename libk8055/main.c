@@ -154,7 +154,7 @@ int main ( int argc,char* params[] ) {
          * and enable debug mode
          */
         if ( debug )
-            usb_set_debug( 2 );
+            libusb_set_debug( 2 );
         dev = k8055_alloc();
         if(dev==NULL) {
             fprintf(stderr,"Could not allocate data for k8055_dev struct.\n");
