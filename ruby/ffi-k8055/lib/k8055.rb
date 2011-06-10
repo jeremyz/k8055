@@ -11,7 +11,7 @@ module K8055
                     :usb_ctx,       :pointer,
                     :usb_handle,    :pointer,
                     :data_in,       :pointer,
-                    :data_out,      :pointer,
+                    :data_out,      :pointer
         end
         #
         extend FFI::Library
