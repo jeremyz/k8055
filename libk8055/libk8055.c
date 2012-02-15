@@ -108,9 +108,6 @@
 #define CMD_RESET_COUNTER_2 0x04
 #define CMD_SET_ANALOG_DIGITAL 0x05
 
-/* set debug to 0 to not print excess info */
-static int debug = 0;
-
 struct k8055_dev* k8055_alloc( void ) {
     struct k8055_dev* dev = ( struct k8055_dev* ) malloc( sizeof( struct k8055_dev ) );
     dev->dev_no=0;
@@ -127,7 +124,7 @@ int k8055_read( struct k8055_dev* dev ) {
     int length;
     for( int i=0; i<READ_RETRY; i++ ) {
         if( libusb_interrupt_transfer( dev->usb_handle, USB_INP_EP, dev->data_in, PACKET_LEN, &length, USB_TIMEOUT )==0 && ( length==PACKET_LEN ) && ( dev->data_in[1]==dev->dev_no ) ) return 0;
-        if( debug ) fprintf( stderr, "k8055 read retry\n" );
+        if( dev->debug_level>0 ) fprintf( stderr, "k8055 read retry\n" );
     }
     return K8055_ERROR;
 }
@@ -138,7 +135,7 @@ int k8055_write( struct k8055_dev* dev ) {
     int length;
     for( int i=0; i<WRITE_RETRY; i++ ) {
         if( libusb_interrupt_transfer( dev->usb_handle, USB_OUT_EP, dev->data_out, PACKET_LEN, &length, USB_TIMEOUT )==0 && length==PACKET_LEN ) return 0;
-        if( debug ) fprintf( stderr, "k8055 write retry\n" );
+        if( dev->debug_level>0 ) fprintf( stderr, "k8055 write retry\n" );
     }
     return K8055_ERROR;
 }
@@ -212,30 +209,31 @@ int k8055_counter_2( struct k8055_dev* dev ) {
 }
 
 /* If device is owned by some kernel driver, try to disconnect it and clanalog_inputm the device*/
-static int k8055_takeover_device( libusb_device_handle* handle, int interface ) {
+static int k8055_takeover_device( struct k8055_dev* dev, int interface ) {
+    libusb_device_handle* handle = dev->usb_handle;
     char driver_name[STR_BUFF];
     memset( driver_name, 0, STR_BUFF );
     int ret = K8055_ERROR;
     assert( handle != NULL );
     if( libusb_detach_kernel_driver( handle, interface )!=0 ) {
-        if( debug ) fprintf( stderr, "usb_detach_kernel_driver fanalog_inputlure\n" );
+        if( dev->debug_level>0 ) fprintf( stderr, "usb_detach_kernel_driver fanalog_inputlure\n" );
     }
     if ( libusb_claim_interface( handle, interface )!=0 ) {
-        if( debug ) fprintf( stderr, "usb_claim_interface failure\n" );
+        if( dev->debug_level>0 ) fprintf( stderr, "usb_claim_interface failure\n" );
         return K8055_ERROR;
     }
     libusb_set_configuration( handle, 1 );
-    if ( debug ) fprintf( stderr, "Found interface %d, took over the device\n", interface );
+    if ( dev->debug_level>0 ) fprintf( stderr, "Found interface %d, took over the device\n", interface );
     return 0;
 }
 
-int k8055_set_debug( int status ) {
-    debug = ( ( status>0 ) ? 1 : 0 );
-    return debug;
+int k8055_set_debug( struct k8055_dev* dev, int level ) {
+    libusb_set_debug( dev->usb_ctx, level);
+    return dev->debug_level = level;
 }
 
-int k8055_get_debug( void ) {
-    return debug;
+int k8055_get_debug( struct k8055_dev* dev ) {
+    return dev->debug_level;
 }
 
 char* k8055_version( void ) {
@@ -250,7 +248,7 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
     libusb_init( &dev->usb_ctx );
     ssize_t cnt = libusb_get_device_list( NULL, &list );
     if( cnt<0 ) {
-        if( debug ) fprintf( stderr, "Unable to list usb devices\n" );
+        if( dev->debug_level>0 ) fprintf( stderr, "Unable to list usb devices\n" );
         return K8055_ERROR;
     }
     for ( ssize_t i=0; i<cnt; i++ ) {
@@ -259,25 +257,25 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
         if( libusb_get_device_descriptor( usb_dev, &usb_descr )==0 ) {
             if( ( usb_descr.idVendor==VELLEMAN_VENDOR_ID ) && ( usb_descr.idProduct==ipid ) ) {
                 // TODO  was usb_dev->filename
-                if( debug ) fprintf( stderr, "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n", "002", usb_descr.idVendor, usb_descr.idProduct );
+                if( dev->debug_level>0 ) fprintf( stderr, "Velleman Device Found @ Address %s Vendor 0x0%x Product ID 0x0%x\n", "002", usb_descr.idVendor, usb_descr.idProduct );
                 found = usb_dev;
                 break;
             }
         } else {
-            if( debug ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
+            if( dev->debug_level>0 ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
         }
     }
     if( found==NULL ) {
-        if( debug ) fprintf( stderr, "No Velleman device found.\n" );
+        if( dev->debug_level>0 ) fprintf( stderr, "No Velleman device found.\n" );
         return K8055_ERROR;
     }
     dev->usb_handle = NULL;
     if( libusb_open( found , &dev->usb_handle )!=0 ) {
-        if( debug ) fprintf( stderr,"usb_open failure\n" );
+        if( dev->debug_level>0 ) fprintf( stderr,"usb_open failure\n" );
         return K8055_ERROR;
     }
-    if( k8055_takeover_device( dev->usb_handle, 0 )!=0 ) {
-        if( debug ) fprintf( stderr, "Can not take over the device from the OS driver\n" );
+    if( k8055_takeover_device( dev, 0 )!=0 ) {
+        if( dev->debug_level>0 ) fprintf( stderr, "Can not take over the device from the OS driver\n" );
         libusb_release_interface( dev->usb_handle, 0 );
         libusb_close( dev->usb_handle );
         libusb_exit( dev->usb_ctx );
@@ -289,10 +287,10 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
         dev->data_out[CMD_OFFSET] = CMD_RESET;
         k8055_write( dev );
         if ( k8055_read( dev )==0 ) {
-            if( debug ) fprintf( stderr, "Device %d ready\n", board_address );
+            if( dev->debug_level>0 ) fprintf( stderr, "Device %d ready\n", board_address );
             return board_address;
         } else {
-            if( debug ) fprintf( stderr, "Device %d not ready\n", board_address );
+            if( dev->debug_level>0 ) fprintf( stderr, "Device %d not ready\n", board_address );
             libusb_release_interface( dev->usb_handle, 0 );
             libusb_close( dev->usb_handle );
             libusb_exit( dev->usb_ctx );
@@ -301,19 +299,19 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
             return K8055_ERROR;
         }
     }
-    if( debug ) fprintf( stderr, "Could not find Velleman k8055 with address %d\n", board_address );
+    if( dev->debug_level>0 ) fprintf( stderr, "Could not find Velleman k8055 with address %d\n", board_address );
     return K8055_ERROR;
 }
 
 int k8055_close_device( struct k8055_dev* dev ) {
     if ( dev->dev_no == 0 ) {
-        if ( debug ) fprintf( stderr, "Current device is not open\n" );
+        if ( dev->debug_level>0 ) fprintf( stderr, "Current device is not open\n" );
     } else if( dev->usb_handle==NULL ) {
-        if ( debug ) fprintf( stderr, "Current device is marked as open, but device hanlde is NULL\n" );
+        if ( dev->debug_level>0 ) fprintf( stderr, "Current device is marked as open, but device hanlde is NULL\n" );
         dev->dev_no = 0;
     } else {
         if( libusb_release_interface( dev->usb_handle, 0 )!= 0 ) {
-            if( debug ) fprintf( stderr,"libusb_realese_interface failure.\n" );
+            if( dev->debug_level>0 ) fprintf( stderr,"libusb_realese_interface failure.\n" );
         }
         libusb_close( dev->usb_handle );
         dev->dev_no = 0;
@@ -322,7 +320,7 @@ int k8055_close_device( struct k8055_dev* dev ) {
     return 0;
 }
 
-int k8055_search_devices( void ) {
+int k8055_search_devices( int verbose ) {
     int ret = 0;
     struct libusb_context* usb_ctx;
     libusb_device** list;
@@ -335,10 +333,10 @@ int k8055_search_devices( void ) {
                 ret |= 0x01 << ( usb_descr.idProduct-K8055_IPID );
             }
         } else {
-            if( debug ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
+            if( verbose>0 ) fprintf( stderr, "USB device descriptor unaccessible.\n" );
         }
     }
-    if( debug ) fprintf( stderr,"found devices : %X\n", ret );
+    if( verbose>0 ) fprintf( stderr,"found devices : %X\n", ret );
     libusb_exit( usb_ctx );
     return ret;
 }
@@ -508,7 +506,7 @@ int k8055_set_counter_debounce_time( struct k8055_dev* dev, int counter, int deb
     /* simple round() function) */
     if ( value > ( ( int )value + 0.49999999 ) ) value+=1;
     dev->data_out[5+counter] = ( unsigned char )value;
-    if ( debug ) fprintf( stderr, "Debouncetime%d value for k8055:%d\n",( int )counter, dev->data_out[5+counter] );
+    if ( dev->debug_level>0 ) fprintf( stderr, "Debouncetime%d value for k8055:%d\n",( int )counter, dev->data_out[5+counter] );
     return k8055_write( dev );
 }
 
@@ -523,7 +521,7 @@ char* Version( void ) {
 }
 /* New function in version 2 of Velleman DLL, should return devices-found bitmask or 0*/
 long SearchDevices( void ) {
-    return k8055_search_devices();
+    return k8055_search_devices(0);
 }
 /* Open device - scan through usb busses looking for the right device, claim it and then open the device */
 int OpenDevice( long board_address ) {

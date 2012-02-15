@@ -37,6 +37,7 @@ extern "C" {
 
     struct k8055_dev {
         int dev_no;
+        int debug_level;
         struct libusb_context *usb_ctx;
         struct libusb_device_handle *usb_handle;
         unsigned char data_in[PACKET_LEN+1];
@@ -70,12 +71,12 @@ extern "C" {
     int k8055_counter_2( struct k8055_dev* dev );
 
     char* k8055_version( void );
-    int k8055_set_debug( int status );
-    int k8055_get_debug( void );
-    int k8055_search_devices( void );
+    int k8055_search_devices( int verbose );
 
     int k8055_open_device( struct k8055_dev* dev, int board_address );
     int k8055_close_device( struct k8055_dev* dev );
+    int k8055_set_debug( struct k8055_dev* dev, int level );
+    int k8055_get_debug( struct k8055_dev* dev );
 
     /* analog outputs */
     int k8055_set_analog_channel( struct k8055_dev* dev, int channel );

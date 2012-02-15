@@ -112,7 +112,7 @@ char* K8055::Version( void ) {
 }
 
 int K8055::SearchDevices( void ) {
-    return k8055_search_devices();
+    return k8055_search_devices(0);
 }
 
 int K8055::OpenDevice( int board_address ) {
