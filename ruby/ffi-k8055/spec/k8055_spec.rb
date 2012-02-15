@@ -10,7 +10,7 @@ describe K8055 do
     end
     #
     it "search_devices should find one" do
-        K8055.search_devices.should > 0
+        K8055.search_devices(0).should > 0
     end
     #
     describe K8055 do
