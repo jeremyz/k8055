@@ -32,9 +32,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.              *
  ****************************************************************************/
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <usb.h>
 #include <assert.h>
 #include <sys/time.h>
 #include "k8055.h"
@@ -111,7 +111,6 @@ int read_param( int argc, char* params[] ) {
                   !str2int( params[i]+6,&dbt2 ) ) erreurParam = true;
         else if ( !strcmp( params[i],"-debug" ) ) {
             debug = 1;
-            k8055_set_debug(1);
         } else if ( !strcmp( params[i],"-reset1" ) ) resetcnt1 = true;
         else if ( !strcmp( params[i],"-reset2" ) ) resetcnt2 = true;
         else if ( !strcmp( params[i],"--help" ) ) {
@@ -153,8 +152,6 @@ int main ( int argc,char* params[] ) {
          * Initialise USB system
          * and enable debug mode
          */
-        if ( debug )
-            libusb_set_debug( 2 );
         dev = k8055_alloc();
         if(dev==NULL) {
             fprintf(stderr,"Could not allocate data for k8055_dev struct.\n");
@@ -164,6 +161,8 @@ int main ( int argc,char* params[] ) {
             fprintf(stderr,"Could not open the k8055 (port:%d)\nPlease ensure that the device is correctly connected.\n",ipid );
             return ( EXIT_FAILURE );
         } else {
+            if ( debug )
+                k8055_set_debug(dev,2);
             if ( resetcnt1 )
                 k8055_reset_counter( dev,1 );
             if ( resetcnt2 )
