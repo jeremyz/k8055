@@ -246,7 +246,7 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
     libusb_device** list;
     libusb_device* found = NULL;
     libusb_init( &dev->usb_ctx );
-    ssize_t cnt = libusb_get_device_list( NULL, &list );
+    ssize_t cnt = libusb_get_device_list( dev->usb_ctx, &list );
     if( cnt<0 ) {
         if( dev->debug_level>0 ) fprintf( stderr, "Unable to list usb devices\n" );
         return K8055_ERROR;
@@ -266,14 +266,17 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
         }
     }
     if( found==NULL ) {
+        libusb_free_device_list(list,1);
         if( dev->debug_level>0 ) fprintf( stderr, "No Velleman device found.\n" );
         return K8055_ERROR;
     }
     dev->usb_handle = NULL;
     if( libusb_open( found , &dev->usb_handle )!=0 ) {
+        libusb_free_device_list(list,1);
         if( dev->debug_level>0 ) fprintf( stderr,"usb_open failure\n" );
         return K8055_ERROR;
     }
+    libusb_free_device_list(list,1);
     if( k8055_takeover_device( dev, 0 )!=0 ) {
         if( dev->debug_level>0 ) fprintf( stderr, "Can not take over the device from the OS driver\n" );
         libusb_release_interface( dev->usb_handle, 0 );
@@ -326,7 +329,7 @@ int k8055_search_devices( int verbose ) {
     libusb_device** list;
     struct libusb_device_descriptor usb_descr;
     libusb_init( &usb_ctx );
-    ssize_t cnt = libusb_get_device_list( NULL, &list );
+    ssize_t cnt = libusb_get_device_list( usb_ctx, &list );
     for ( ssize_t i=0; i<cnt; i++ ) {
         if( libusb_get_device_descriptor( list[i], &usb_descr )==0 ) {
             if( usb_descr.idVendor==VELLEMAN_VENDOR_ID ) {
@@ -337,6 +340,7 @@ int k8055_search_devices( int verbose ) {
         }
     }
     if( verbose>0 ) fprintf( stderr,"found devices : %X\n", ret );
+    libusb_free_device_list(list,1);
     libusb_exit( usb_ctx );
     return ret;
 }
