@@ -1,8 +1,8 @@
 #! /bin/bash
 if [ -x ./k8055 ]; then
-    K8055=./k8055
-elif [ -x ./build/libk8055/k8055 ]; then
-    K8055=./build/libk8055/k8055
+    K8055=./k8055cmd
+elif [ -x ./build/libk8055/k8055cmd ]; then
+    K8055=./build/libk8055/k8055cmd
 else
     echo "unable to find k8055 binary" && exit 1
 fi
