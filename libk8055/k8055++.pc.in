@@ -3,8 +3,8 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
-Name: k8055
-Description: Velleman k8055 USB Experiment Interface Board interface
+Name: k8055++
+Description: Velleman k8055 USB Experiment Interface Board C++ interface
 Version: @VERSION@
-Libs: -L${libdir} -lk8055
+Libs: -L${libdir} -lk8055++
 Cflags: -I${includedir}
