@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: k8055
+Description: Velleman k8055 USB Experiment Interface Board driver
+Version: @VERSION@
+Libs: -L${libdir} -lk8055
+Cflags: -I${includedir}
