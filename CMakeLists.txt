@@ -82,6 +82,7 @@ ENDIF()
 # BUILD SUMMARY
 #
 COLOR_MESSAGE("\n${_escape}[1;36mBuild Summary${_escape}[0m\n--------------------")
+COLOR_MESSAGE("* ${_escape}[1;35mInstall dir${_escape}[0m           :   ${_escape}[1;32m${CMAKE_INSTALL_PREFIX}${_escape}[0m")
 IF (LIBUSB_FOUND)
     COLOR_MESSAGE("* ${_escape}[1;35mlibusb${_escape}[0m                :   ${_escape}[1;32mfound${_escape}[0m build libk8055")
 ELSE()
