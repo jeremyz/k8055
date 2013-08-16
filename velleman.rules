@@ -11,11 +11,9 @@
 
 SUBSYSTEM !="usb_device", ACTION !="add", GOTO="velleman_rules_end"
 
-ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5500", SYMLINK+="k8055_0"
-ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5501", SYMLINK+="k8055_1"
-ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5502", SYMLINK+="k8055_2"
-ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5503", SYMLINK+="k8055_3"
-
-MODE="0660", GROUP="k8055"
+ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5500", MODE="0660", GROUP="k8055", SYMLINK+="k8055_0"
+ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5501", MODE="0660", GROUP="k8055", SYMLINK+="k8055_1"
+ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5502", MODE="0660", GROUP="k8055", SYMLINK+="k8055_2"
+ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="5503", MODE="0660", GROUP="k8055", SYMLINK+="k8055_3"
 
 LABEL="velleman_rules_end"
