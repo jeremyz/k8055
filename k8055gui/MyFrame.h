@@ -57,7 +57,8 @@ enum
   IDC_DBCT1,
   IDC_CMPT2,
   IDC_RSTC2,
-  IDC_DBCT2
+  IDC_DBCT2,
+  TEST_TIMER
 }; 
 
 
@@ -69,6 +70,7 @@ protected:
     long address; // board address 0 -> 3
     bool connected;// true if connected 
     K8055 k8055;
+    wxTimer *timer;
 public:
 
     //constructor
@@ -108,6 +110,7 @@ public:
     void OnBnClickedDbcc2(wxCommandEvent& event);
 
     void OnIdle(wxIdleEvent& event);
+    void OnTimer(wxTimerEvent& event);
 
     void WriteDigital();
     void WriteAnalog();

@@ -31,7 +31,8 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
 
-  panel= new wxPanel(this);
+  panel = new wxPanel(this);
+  timer = new wxTimer(this, TEST_TIMER);
 
   //Card Address
   new wxStaticBox(panel,-1,_("Card Address"), wxPoint(5,6),wxSize(112,45));
@@ -104,7 +105,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
   Counter1Text->SetEditable(false);
 
   Counter1ResetButton=new wxButton(panel,IDC_RSTC1,_("Reset"),wxPoint(385,165),wxSize(90,30));
- 
+
   wxString choix[4]={_("0ms"), _("2ms"), _("10ms") , _("1000ms")};
   Counter1Debounce=new wxRadioBox(panel,IDC_DBCT1,_("Debounce Time"),wxPoint(375,215),wxSize(115,115),4, choix);
   Counter1Debounce->SetSelection(1);
@@ -121,6 +122,7 @@ MyFrame::MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
 
   address=0;//default address
   connected=0;//start not connected
+
 }
 
 /* ********************************************************************** */
@@ -155,7 +157,7 @@ void MyFrame::OnBnClickedConnect(wxCommandEvent& WXUNUSED(event))
         wxMessageBox(_T("OpenDevice failed!\nCheck Connection and Card Address"), _T("Error"), wxOK | wxICON_ERROR, this);
      }
      else
-     {     
+     {
         connected=1;
         WriteAll();
         ConnectionStatus->Clear();
@@ -211,14 +213,31 @@ void MyFrame::OnBnClickedClearallanalog(wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnBnClickedOutputtest(wxCommandEvent& WXUNUSED(event))
 {
-    if (DEBUG) cout<<"OutputTest clicked!"<<endl;
     k8055.ClearAllDigital();
     k8055.ClearAllAnalog();
-    k8055.SetAnalogChannel( 1 );
-    for( int i=0, j=255; i<256; i++, j--) k8055.WriteAllOutputs(i,i,j);
-    k8055.ClearAllDigital();
-    k8055.ClearAllAnalog();
-    OutputTest->SetValue(false);
+    timer->Start(30);
+}
+
+void MyFrame::OnTimer(wxTimerEvent& event)
+{
+    static int i = 0;
+    AnalgOutput1->SetValue(i);
+    AnalgOutput2->SetValue(255-i);
+    O1->SetValue((i>>0) & 0x1);
+    O2->SetValue((i>>1) & 0x1);
+    O3->SetValue((i>>2) & 0x1);
+    O4->SetValue((i>>3) & 0x1);
+    O5->SetValue((i>>4) & 0x1);
+    O6->SetValue((i>>5) & 0x1);
+    O7->SetValue((i>>6) & 0x1);
+    O8->SetValue((i>>7) & 0x1);
+    k8055.WriteAllOutputs(i, i, 255-i);
+    i++;
+    if(i>255) {
+        timer->Stop();
+        i = 0;
+        OutputTest->SetValue(false);
+    }
 }
 
 void MyFrame::OnNMCustomdrawDa1(wxScrollEvent& WXUNUSED(event))
@@ -308,14 +327,14 @@ void MyFrame::OnBnClickedResct1(wxCommandEvent& WXUNUSED(event))
 {
      if (DEBUG) cout<<"Resct1 clicked!"<<endl;
      if (connected)
-     {      
+     {
        k8055.ResetCounter(1);
      }
 }
 
 void MyFrame::OnBnClickedDbcc1(wxCommandEvent& WXUNUSED(event))
 {
-     if (DEBUG) cout<<"Resct1 clicked!"<<endl; 
+     if (DEBUG) cout<<"Resct1 clicked!"<<endl;
      WriteDebounce1();
 }
 
@@ -323,7 +342,7 @@ void MyFrame::OnBnClickedResct2(wxCommandEvent& WXUNUSED(event))
 {
      if (DEBUG) cout<<"Resct2 clicked!"<<endl;
      if (connected)
-     {      
+     {
        k8055.ResetCounter(2);
      }
 }
@@ -342,7 +361,7 @@ void MyFrame::OnIdle(wxIdleEvent& event)
 
      if (DEBUG) cout<<"doing nothing!"<<endl;
      if (connected)
-     { 
+     {
        //read data
        int data1, data2, data3, data4, data5;
        k8055.ReadAllInputs(&data1, &data2, &data3, &data4, &data5);
@@ -388,9 +407,9 @@ void MyFrame::WriteDigital()
 void MyFrame::WriteAnalog()
 {
      if (connected)
-     {      
+     {
         //OutputAnalogChannel(1, (long) AnalgOutput1->GetValue());
-        //OutputAnalogChannel(2, (long) AnalgOutput2->GetValue()); 
+        //OutputAnalogChannel(2, (long) AnalgOutput2->GetValue());
         k8055.WriteAllAnalog( AnalgOutput1->GetValue(), AnalgOutput2->GetValue());
      }
 }
@@ -410,7 +429,7 @@ void MyFrame::WriteDebounce1()
            case 3 : DebounceTime=1000;
        }
        k8055.SetCounterDebounceTime(1, DebounceTime);
-     } 
+     }
 }
 
 /* debounce2 value */
@@ -428,7 +447,7 @@ void MyFrame::WriteDebounce2()
            case 3 : DebounceTime=1000;
        }
        k8055.SetCounterDebounceTime(2, DebounceTime);
-     } 
+     }
 }
 
 /* all values */
@@ -443,7 +462,6 @@ void MyFrame::WriteAll()
        WriteDebounce1();
        WriteDebounce2();
      }
-     
 }
 
 
@@ -462,7 +480,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_CHECKBOX(IDC_DIN2,MyFrame::OnBnClickedDin2)
     EVT_CHECKBOX(IDC_DIN3,MyFrame::OnBnClickedDin3)
     EVT_CHECKBOX(IDC_DIN4,MyFrame::OnBnClickedDin4)
-    EVT_CHECKBOX(IDC_DIN5,MyFrame::OnBnClickedDin5)    
+    EVT_CHECKBOX(IDC_DIN5,MyFrame::OnBnClickedDin5)
     EVT_CHECKBOX(IDC_DOUT1,MyFrame::OnBnClickedDout1)
     EVT_CHECKBOX(IDC_DOUT2,MyFrame::OnBnClickedDout2)
     EVT_CHECKBOX(IDC_DOUT3,MyFrame::OnBnClickedDout3)
@@ -480,6 +498,9 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
 
     EVT_IDLE(MyFrame::OnIdle)
 
+    EVT_TIMER(TEST_TIMER, MyFrame::OnTimer)
+
 END_EVENT_TABLE()
+
 
 
