@@ -157,12 +157,12 @@ int main ( int argc,char* params[] ) {
             fprintf(stderr,"Could not allocate data for k8055_dev struct.\n");
             return ( EXIT_FAILURE );
         }
+        if ( debug )
+            k8055_set_debug(dev,3);
         if ( k8055_open_device( dev, ipid )<0 ) {
             fprintf(stderr,"Could not open the k8055 (port:%d)\nPlease ensure that the device is correctly connected.\n",ipid );
             return ( EXIT_FAILURE );
         } else {
-            if ( debug )
-                k8055_set_debug(dev,2);
             if ( resetcnt1 )
                 k8055_reset_counter( dev,1 );
             if ( resetcnt2 )
