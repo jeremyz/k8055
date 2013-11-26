@@ -122,8 +122,12 @@ void k8055_free( struct k8055_dev* dev ) {
 int k8055_read( struct k8055_dev* dev ) {
     if( dev->dev_no==0 ) return K8055_ERROR;
     int length;
+    int r, n;
     for( int i=0; i<READ_RETRY; i++ ) {
-        if( libusb_interrupt_transfer( dev->usb_handle, USB_INP_EP, dev->data_in, PACKET_LEN, &length, USB_TIMEOUT )==0 && ( length==PACKET_LEN ) && ( dev->data_in[1]==dev->dev_no ) ) return 0;
+        r = libusb_interrupt_transfer(dev->usb_handle, USB_INP_EP, dev->data_in, PACKET_LEN, &length, USB_TIMEOUT);
+        n = dev->data_in[1] & 0xf;
+        if (n > 4) n -= 10;
+        if (r==0 && ( length==PACKET_LEN ) && ( n==dev->dev_no ) ) return 0;
         if( dev->debug_level>0 ) fprintf( stderr, "k8055 read retry\n" );
     }
     return K8055_ERROR;
