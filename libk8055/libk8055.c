@@ -215,14 +215,23 @@ static int k8055_takeover_device( struct k8055_dev* dev, int interface ) {
     memset( driver_name, 0, STR_BUFF );
     int ret = K8055_ERROR;
     assert( handle != NULL );
-    if( libusb_detach_kernel_driver( handle, interface )!=0 ) {
-        if( dev->debug_level>0 ) fprintf( stderr, "usb_detach_kernel_driver fanalog_inputlure\n" );
-    }
-    if ( libusb_claim_interface( handle, interface )!=0 ) {
-        if( dev->debug_level>0 ) fprintf( stderr, "usb_claim_interface failure\n" );
+    int r;
+    r = libusb_detach_kernel_driver( handle, interface );
+    if( r!=0  && r!=LIBUSB_ERROR_NOT_FOUND) {
+        if( dev->debug_level>0 ) fprintf( stderr, "usb_detach_kernel_driver failure: %d\n", r);
         return K8055_ERROR;
     }
-    libusb_set_configuration( handle, 1 );
+    r = libusb_set_configuration( handle, 1 );
+    if ( r!= 0)
+    {
+        if( dev->debug_level>0 ) fprintf( stderr, "usb_set_configuration failure: %d\n", r);
+        return K8055_ERROR;
+    }
+    r = libusb_claim_interface( handle, interface );
+    if ( r!=0 ) {
+        if( dev->debug_level>0 ) fprintf( stderr, "usb_claim_interface failure: %d\n", r);
+        return K8055_ERROR;
+    }
     if ( dev->debug_level>0 ) fprintf( stderr, "Found interface %d, took over the device\n", interface );
     return 0;
 }
