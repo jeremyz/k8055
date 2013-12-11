@@ -40,7 +40,7 @@ function cmake_make() {
 
 function cmake_install() {
     cmake_init
-    echo -e " * install" && cd $BUILD_DIR && sudo make install && cd .. || exit 1
+    echo -e " * install" && cd $BUILD_DIR && make install && cd .. || exit 1
 }
 
 function cmake_tests() {
