@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <libusb.h>
 #include "k8055.h"
 
 #define STR_BUFF 256
@@ -158,7 +159,7 @@ int main ( int argc,char* params[] ) {
             return ( EXIT_FAILURE );
         }
         if ( debug )
-            k8055_set_debug(dev,3);
+            k8055_set_debug(dev, LIBUSB_LOG_LEVEL_DEBUG);
         if ( k8055_open_device( dev, ipid )<0 ) {
             fprintf(stderr,"Could not open the k8055 (port:%d)\nPlease ensure that the device is correctly connected.\n",ipid );
             return ( EXIT_FAILURE );

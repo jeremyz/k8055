@@ -242,7 +242,7 @@ static int k8055_takeover_device( struct k8055_dev* dev, int interface ) {
 
 int k8055_set_debug( struct k8055_dev* dev, int level ) {
     if (dev->usb_ctx)
-        libusb_set_debug( dev->usb_ctx, level);
+        libusb_set_option( dev->usb_ctx, LIBUSB_OPTION_LOG_LEVEL, level);
     return dev->debug_level = level;
 }
 
@@ -260,7 +260,7 @@ int k8055_open_device( struct k8055_dev* dev, int board_address ) {
     libusb_device** list;
     libusb_device* found = NULL;
     libusb_init( &dev->usb_ctx );
-    libusb_set_debug( dev->usb_ctx, dev->debug_level);
+    libusb_set_option( dev->usb_ctx, LIBUSB_OPTION_LOG_LEVEL, dev->debug_level);
     ssize_t cnt = libusb_get_device_list( dev->usb_ctx, &list );
     if( cnt<0 ) {
         if( dev->debug_level>0 ) fprintf( stderr, "Unable to list usb devices\n" );
