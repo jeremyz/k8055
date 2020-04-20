@@ -162,7 +162,7 @@ void MyFrame::OnBnClickedConnect(wxCommandEvent& WXUNUSED(event))
         WriteAll();
         ConnectionStatus->Clear();
         *ConnectionStatus<<_("Connected at address ")<<address;
-        wxMessageBox(_T("Connection with device OK"), _T("USB Board status"), wxOK | wxICON_INFORMATION, this); 
+        wxMessageBox(_T("Connection with device OK"), _T("USB Board status"), wxOK | wxICON_INFORMATION, this);
      }
 }
 
@@ -398,7 +398,7 @@ void MyFrame::WriteDigital()
      if (connected)
      {
         long word=O1->GetValue()+2*O2->GetValue()+4*O3->GetValue()+8*O4->GetValue()+
-        16*O5->GetValue()+32*O6->GetValue()+64*O7->GetValue()+128*O8->GetValue(); 
+        16*O5->GetValue()+32*O6->GetValue()+64*O7->GetValue()+128*O8->GetValue();
         k8055.WriteAllDigital(word);
      }
 }
@@ -456,7 +456,7 @@ void MyFrame::WriteAll()
      if (connected)
      {
        long word=O1->GetValue()+2*O2->GetValue()+4*O3->GetValue()+8*O4->GetValue()+
-       16*O5->GetValue()+32*O6->GetValue()+64*O7->GetValue()+128*O8->GetValue(); 
+       16*O5->GetValue()+32*O6->GetValue()+64*O7->GetValue()+128*O8->GetValue();
        k8055.WriteAllDigital(word);
        k8055.WriteAllAnalog((long) AnalgOutput1->GetValue(), (long) AnalgOutput2->GetValue());
        WriteDebounce1();

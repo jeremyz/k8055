@@ -59,16 +59,16 @@ enum
   IDC_RSTC2,
   IDC_DBCT2,
   TEST_TIMER
-}; 
+};
 
 
 
 
 class MyFrame: public wxFrame
 {
-protected:    
+protected:
     long address; // board address 0 -> 3
-    bool connected;// true if connected 
+    bool connected;// true if connected
     K8055 k8055;
     wxTimer *timer;
 public:
@@ -141,7 +141,7 @@ public:
 
     //Inputs
     wxCheckBox *I1,*I2,*I3,*I4,*I5;
-    
+
     //Outputs
     wxCheckBox *O1,*O2,*O3,*O4,*O5,*O6,*O7,*O8;
 
